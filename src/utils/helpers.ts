@@ -19,12 +19,12 @@ export function getAppBaseUrl(): string {
     return origin;
   }
 
-  // Inside native APK app, return origin if not localhost/capacitor protocol, otherwise fallback
+  // Inside native APK app, return origin if not localhost/capacitor protocol, otherwise fallback to official domain
   if (origin && !origin.includes('localhost') && !origin.includes('127.0.0.1') && !origin.startsWith('capacitor://') && !origin.startsWith('file://')) {
     return origin;
   }
 
-  return origin;
+  return 'https://amr-exam-platform.vercel.app';
 }
 
 /**
