@@ -341,60 +341,65 @@ export const Dashboard: React.FC = () => {
 
                       {/* Actions */}
                       <td className="py-4 px-4 text-left">
-                        <div className="flex items-center justify-end gap-1">
+                        <div className="flex flex-wrap items-center justify-end gap-1.5 min-w-[280px]">
                           
-                          {/* Open Live Test Link */}
-                          <a
-                            href={testUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            title="فتح صفحة الاختبار للطالب"
-                            className="p-2 text-slate-600 hover:text-navy-900 hover:bg-slate-100 rounded-lg transition-colors"
-                          >
-                            <ExternalLink className="w-4 h-4" />
-                          </a>
-
-                          {/* Edit Test */}
-                          <Link
-                            to={`/tests/${test.id}/edit`}
-                            title="تعديل الاختبار والأسئلة"
-                            className="p-2 text-slate-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                          >
-                            <Edit3 className="w-4 h-4" />
-                          </Link>
-
-                          {/* View Results */}
+                          {/* Results */}
                           <Link
                             to={`/tests/${test.id}/results`}
-                            title="عرض النتائج والتقارير"
-                            className="p-2 text-slate-600 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-colors"
+                            title="عرض نتائج وعلامات الطلاب"
+                            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-bold bg-purple-50 text-purple-700 hover:bg-purple-100 border border-purple-200/70 transition-all shadow-xs"
                           >
-                            <BarChart3 className="w-4 h-4" />
+                            <BarChart3 className="w-3.5 h-3.5" />
+                            <span>النتائج</span>
                           </Link>
 
-                          {/* Share Link Modal */}
+                          {/* Share */}
                           <button
                             onClick={() => {
                               setSelectedTestForShare(test);
                               setShareModalOpen(true);
                             }}
-                            title="مشاركة / نسخ رابط الاختبار"
-                            className="p-2 text-slate-600 hover:text-gold-600 hover:bg-gold-50 rounded-lg transition-colors"
+                            title="مشاركة ورابط الاختبار"
+                            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-bold bg-amber-50 text-amber-800 hover:bg-amber-100 border border-amber-200/70 transition-all shadow-xs"
                           >
-                            <Share2 className="w-4 h-4" />
+                            <Share2 className="w-3.5 h-3.5 text-amber-600" />
+                            <span>مشاركة</span>
                           </button>
 
-                          {/* Toggle Active/Stopped */}
+                          {/* Edit */}
+                          <Link
+                            to={`/tests/${test.id}/edit`}
+                            title="تعديل بيانات وأسئلة الاختبار"
+                            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-bold bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200/70 transition-all shadow-xs"
+                          >
+                            <Edit3 className="w-3.5 h-3.5" />
+                            <span>تعديل</span>
+                          </Link>
+
+                          {/* Preview / Live Student Test */}
+                          <a
+                            href={testUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            title="فتح رابط الاختبار للطلاب"
+                            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-bold bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200 transition-all shadow-xs"
+                          >
+                            <ExternalLink className="w-3.5 h-3.5 text-slate-500" />
+                            <span>معاينة</span>
+                          </a>
+
+                          {/* Toggle Active/Stopped Status */}
                           <button
                             onClick={() => handleToggleStatus(test)}
-                            title={test.status === 'published' ? 'إيقاف الاختبار' : 'نشر الاختبار'}
-                            className={`p-2 rounded-lg transition-colors ${
+                            title={test.status === 'published' ? 'إيقاف استقبال الإجابات' : 'نشر وتفعيل الاختبار'}
+                            className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-bold border transition-all shadow-xs ${
                               test.status === 'published'
-                                ? 'text-amber-600 hover:bg-amber-50'
-                                : 'text-emerald-600 hover:bg-emerald-50'
+                                ? 'bg-orange-50 text-orange-700 hover:bg-orange-100 border-orange-200/70'
+                                : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border-emerald-200/70'
                             }`}
                           >
-                            <Power className="w-4 h-4" />
+                            <Power className="w-3.5 h-3.5" />
+                            <span>{test.status === 'published' ? 'إيقاف' : 'تفعيل'}</span>
                           </button>
 
                           {/* Delete */}
@@ -403,10 +408,11 @@ export const Dashboard: React.FC = () => {
                               setTestToDelete(test);
                               setDeleteModalOpen(true);
                             }}
-                            title="حذف الاختبار"
-                            className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
+                            title="حذف الاختبار نهائياً"
+                            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-bold bg-rose-50 text-rose-700 hover:bg-rose-100 border border-rose-200/70 transition-all shadow-xs"
                           >
-                            <Trash2 className="w-4 h-4" />
+                            <Trash2 className="w-3.5 h-3.5 text-rose-600" />
+                            <span>حذف</span>
                           </button>
 
                         </div>
