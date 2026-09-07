@@ -129,7 +129,7 @@ export const Dashboard: React.FC = () => {
             أهلاً بعودتك، معلمنا الفاضل
           </span>
           <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
-            لوحة تحكم الاختبارات الإلكترونية
+            لوحة تحكم منصة مقياس للاختبارات الإلكترونية
           </h1>
           <p className="text-slate-300 text-sm max-w-2xl font-medium">
             قم بإنشاء وتعديل ونشر الاختبارات، متابعة أداء الطلاب في الوقت الفعلي، وتنزيل التقارير والتصحيح التلقائي.

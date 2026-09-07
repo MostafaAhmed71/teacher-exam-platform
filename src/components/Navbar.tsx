@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { GraduationCap, PlusCircle, LayoutDashboard, LogOut, Menu, X, User } from 'lucide-react';
+import { PlusCircle, LayoutDashboard, LogOut, Menu, X, User } from 'lucide-react';
 
 export const Navbar: React.FC = () => {
   const { user, logout } = useAuth();
@@ -26,14 +26,16 @@ export const Navbar: React.FC = () => {
           
           {/* Logo & Platform Name */}
           <Link to={user ? "/dashboard" : "/login"} className="flex items-center gap-3 group">
-            <div className="w-10 h-10 rounded-xl bg-gold-500 flex items-center justify-center text-navy-950 font-bold shadow-md group-hover:bg-gold-400 transition-colors">
-              <GraduationCap className="w-6 h-6" />
-            </div>
+            <img
+              src="/logo.png"
+              alt="شعار مقياس"
+              className="h-10 w-auto object-contain rounded-xl bg-white p-1 shadow-sm"
+            />
             <div>
               <span className="font-extrabold text-xl tracking-tight text-white group-hover:text-gold-400 transition-colors">
-                منصة الاختبارات
+                مقياس
               </span>
-              <span className="block text-xs text-gold-400 font-medium">للمعلمين والمدارس</span>
+              <span className="block text-[11px] text-gold-400 font-medium">منصة الاختبارات والتقييم الإلكتروني</span>
             </div>
           </Link>
 
