@@ -102,22 +102,27 @@ ALTER TABLE public.attempts ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.answers ENABLE ROW LEVEL SECURITY;
 
 -- Teacher Policies
+DROP POLICY IF EXISTS "Teachers can view their own profile" ON public.teachers;
 CREATE POLICY "Teachers can view their own profile"
   ON public.teachers FOR SELECT
   USING (auth.uid() = id);
 
+DROP POLICY IF EXISTS "Teachers can update their own profile" ON public.teachers;
 CREATE POLICY "Teachers can update their own profile"
   ON public.teachers FOR UPDATE
   USING (auth.uid() = id);
 
+DROP POLICY IF EXISTS "Teachers can manage their own tests" ON public.tests;
 CREATE POLICY "Teachers can manage their own tests"
   ON public.tests FOR ALL
   USING (auth.uid() = teacher_id);
 
+DROP POLICY IF EXISTS "Teachers can manage questions of their tests" ON public.questions;
 CREATE POLICY "Teachers can manage questions of their tests"
   ON public.questions FOR ALL
   USING (EXISTS (SELECT 1 FROM public.tests WHERE tests.id = questions.test_id AND tests.teacher_id = auth.uid()));
 
+DROP POLICY IF EXISTS "Teachers can manage question options" ON public.question_options;
 CREATE POLICY "Teachers can manage question options"
   ON public.question_options FOR ALL
   USING (EXISTS (
@@ -126,10 +131,12 @@ CREATE POLICY "Teachers can manage question options"
     WHERE questions.id = question_options.question_id AND tests.teacher_id = auth.uid()
   ));
 
+DROP POLICY IF EXISTS "Teachers can view attempts of their tests" ON public.attempts;
 CREATE POLICY "Teachers can view attempts of their tests"
   ON public.attempts FOR SELECT
   USING (EXISTS (SELECT 1 FROM public.tests WHERE tests.id = attempts.test_id AND tests.teacher_id = auth.uid()));
 
+DROP POLICY IF EXISTS "Teachers can view answers of attempts of their tests" ON public.answers;
 CREATE POLICY "Teachers can view answers of attempts of their tests"
   ON public.answers FOR SELECT
   USING (EXISTS (
@@ -139,6 +146,7 @@ CREATE POLICY "Teachers can view answers of attempts of their tests"
   ));
 
 -- Public / Student Policies (Restricted)
+DROP POLICY IF EXISTS "Public can view published tests basic details" ON public.tests;
 CREATE POLICY "Public can view published tests basic details"
   ON public.tests FOR SELECT
   USING (status = 'published');
@@ -255,6 +263,7 @@ DECLARE
   v_correct_count INT := 0;
   v_incorrect_count INT := 0;
   v_unanswered_count INT := 0;
+  v_options JSONB;
   v_detailed_results JSONB := '[]'::jsonb;
 BEGIN
   -- 1. Check test existence and status
@@ -316,7 +325,7 @@ BEGIN
   )
   RETURNING id INTO v_attempt_id;
 
-  -- 5. Insert answers rows & detailed results
+  -- 5. Insert answers rows & detailed results JSON
   FOR v_q IN SELECT * FROM public.questions WHERE test_id = p_test_id ORDER BY sort_order ASC LOOP
     v_selected_ans := p_answers->>v_q.id::text;
     v_is_correct := (v_selected_ans IS NOT NULL AND LOWER(TRIM(v_selected_ans)) = LOWER(TRIM(v_q.correct_answer)));
@@ -325,6 +334,33 @@ BEGIN
       attempt_id, question_id, selected_answer, is_correct, points_earned
     ) VALUES (
       v_attempt_id, v_q.id, v_selected_ans, v_is_correct, CASE WHEN v_is_correct THEN v_q.points ELSE 0 END
+    );
+
+    -- Fetch question options if multiple choice
+    SELECT jsonb_agg(
+      jsonb_build_object(
+        'id', qo.id,
+        'option_text', qo.option_text,
+        'option_key', qo.option_key,
+        'sort_order', qo.sort_order
+      ) ORDER BY qo.sort_order ASC
+    )
+    INTO v_options
+    FROM public.question_options qo
+    WHERE qo.question_id = v_q.id;
+
+    v_detailed_results := v_detailed_results || jsonb_build_array(
+      jsonb_build_object(
+        'question_id', v_q.id,
+        'question_text', v_q.question_text,
+        'question_type', v_q.question_type,
+        'selected_answer', COALESCE(v_selected_ans, ''),
+        'correct_answer', v_q.correct_answer,
+        'is_correct', v_is_correct,
+        'points', v_q.points,
+        'points_earned', CASE WHEN v_is_correct THEN v_q.points ELSE 0 END,
+        'options', COALESCE(v_options, '[]'::jsonb)
+      )
     );
   END LOOP;
 
@@ -337,7 +373,9 @@ BEGIN
     'correct_count', v_correct_count,
     'incorrect_count', v_incorrect_count,
     'unanswered_count', v_unanswered_count,
-    'show_correct_answers', v_test.show_correct_answers
+    'show_correct_answers', true,
+    'show_result', v_test.show_result,
+    'questions_review', v_detailed_results
   );
 END;
 $$;
