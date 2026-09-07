@@ -1,4 +1,31 @@
+import { Capacitor } from '@capacitor/core';
 import type { EvaluationRating } from '../types';
+
+/**
+ * Returns the public web base URL for sharing test links with students.
+ * When running in a browser, it uses the exact live site origin.
+ * When running inside native mobile app (Capacitor), it uses VITE_PUBLIC_SITE_URL if configured.
+ */
+export function getAppBaseUrl(): string {
+  const envUrl = import.meta.env.VITE_PUBLIC_SITE_URL;
+  if (envUrl && envUrl.trim() !== '') {
+    return envUrl.replace(/\/$/, '');
+  }
+
+  const origin = typeof window !== 'undefined' ? window.location.origin : '';
+
+  // If running in browser on web (not native app wrapper), ALWAYS return current origin
+  if (typeof window !== 'undefined' && !Capacitor.isNativePlatform()) {
+    return origin;
+  }
+
+  // Inside native APK app, return origin if not localhost/capacitor protocol, otherwise fallback
+  if (origin && !origin.includes('localhost') && !origin.includes('127.0.0.1') && !origin.startsWith('capacitor://') && !origin.startsWith('file://')) {
+    return origin;
+  }
+
+  return origin;
+}
 
 /**
  * Generates an 8-character hard-to-guess alphanumeric ID for test links (e.g. Ab7K92xP)
@@ -107,29 +134,5 @@ export function formatDateArabic(dateString?: string): string {
   });
 }
 
-/**
- * Returns the public web base URL for sharing test links.
- * When running inside a native mobile app (Capacitor/localhost),
- * it returns the configured public web domain so shared links always open on the web.
- */
-export function getAppBaseUrl(): string {
-  const envUrl = import.meta.env.VITE_PUBLIC_SITE_URL;
-  if (envUrl && envUrl.trim() !== '') {
-    return envUrl.replace(/\/$/, '');
-  }
 
-  const origin = typeof window !== 'undefined' ? window.location.origin : '';
-  const isNativeOrLocalhost =
-    !origin ||
-    origin.includes('localhost') ||
-    origin.includes('127.0.0.1') ||
-    origin.startsWith('capacitor://') ||
-    origin.startsWith('file://');
-
-  if (isNativeOrLocalhost) {
-    return 'https://teacher-exam-platform.vercel.app';
-  }
-
-  return origin;
-}
 
