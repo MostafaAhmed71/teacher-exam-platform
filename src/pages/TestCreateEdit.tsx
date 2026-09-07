@@ -3,7 +3,7 @@ import { useNavigate, useParams, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { testService } from '../services/testService';
 import type { Test, Question, QuestionType, TestStatus } from '../types';
-import { generateUniqueTestId, copyToClipboard } from '../utils/helpers';
+import { generateUniqueTestId, copyToClipboard, getAppBaseUrl } from '../utils/helpers';
 import { useToast } from '../components/Toast';
 import {
   Plus,
@@ -252,7 +252,7 @@ export const TestCreateEdit: React.FC = () => {
   };
 
   const handleCopyLink = async () => {
-    const link = `${window.location.origin}/test/${testId}`;
+    const link = `${getAppBaseUrl()}/test/${testId}`;
     const ok = await copyToClipboard(link);
     if (ok) showToast('تم نسخ رابط الاختبار', 'success');
   };
@@ -296,7 +296,7 @@ export const TestCreateEdit: React.FC = () => {
           </button>
           
           <a
-            href={`${window.location.origin}/test/${testId}`}
+            href={`${getAppBaseUrl()}/test/${testId}`}
             target="_blank"
             rel="noopener noreferrer"
             className="px-4 py-2.5 bg-gold-50 hover:bg-gold-100 text-gold-900 border border-gold-300 font-bold rounded-xl text-xs flex items-center gap-1.5 transition-colors"

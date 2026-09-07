@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { testService } from '../services/testService';
 import type { Test, TestStatus } from '../types';
-import { copyToClipboard, generateWhatsAppShareUrl } from '../utils/helpers';
+import { copyToClipboard, generateWhatsAppShareUrl, getAppBaseUrl } from '../utils/helpers';
 import { useToast } from '../components/Toast';
 import { Modal } from '../components/Modal';
 import {
@@ -88,7 +88,7 @@ export const Dashboard: React.FC = () => {
   };
 
   const handleCopyLink = async (testId: string) => {
-    const url = `${window.location.origin}/test/${testId}`;
+    const url = `${getAppBaseUrl()}/test/${testId}`;
     const ok = await copyToClipboard(url);
     if (ok) {
       showToast('تم نسخ رابط الاختبار بنجاح', 'success');
@@ -276,7 +276,7 @@ export const Dashboard: React.FC = () => {
               </thead>
               <tbody className="divide-y divide-slate-100 text-sm">
                 {filteredTests.map((test) => {
-                  const testUrl = `${window.location.origin}/test/${test.id}`;
+                  const testUrl = `${getAppBaseUrl()}/test/${test.id}`;
 
                   return (
                     <tr key={test.id} className="hover:bg-slate-50/80 transition-colors">
@@ -450,7 +450,7 @@ export const Dashboard: React.FC = () => {
                 <input
                   type="text"
                   readOnly
-                  value={`${window.location.origin}/test/${selectedTestForShare.id}`}
+                  value={`${getAppBaseUrl()}/test/${selectedTestForShare.id}`}
                   className="w-full p-2.5 bg-slate-100 border border-slate-200 rounded-xl text-xs font-mono text-slate-700 dir-ltr text-right"
                 />
                 <button
@@ -470,7 +470,7 @@ export const Dashboard: React.FC = () => {
               <a
                 href={generateWhatsAppShareUrl(
                   selectedTestForShare.title,
-                  `${window.location.origin}/test/${selectedTestForShare.id}`
+                  `${getAppBaseUrl()}/test/${selectedTestForShare.id}`
                 )}
                 target="_blank"
                 rel="noopener noreferrer"
@@ -488,7 +488,7 @@ export const Dashboard: React.FC = () => {
               <br />
               يرجى الدخول إلى الرابط التالي وإكمال الاختبار:
               <br />
-              {`${window.location.origin}/test/${selectedTestForShare.id}`}"
+              {`${getAppBaseUrl()}/test/${selectedTestForShare.id}`}"
             </div>
           </div>
         </Modal>

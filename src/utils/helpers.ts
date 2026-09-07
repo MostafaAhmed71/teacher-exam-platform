@@ -106,3 +106,30 @@ export function formatDateArabic(dateString?: string): string {
     minute: '2-digit',
   });
 }
+
+/**
+ * Returns the public web base URL for sharing test links.
+ * When running inside a native mobile app (Capacitor/localhost),
+ * it returns the configured public web domain so shared links always open on the web.
+ */
+export function getAppBaseUrl(): string {
+  const envUrl = import.meta.env.VITE_PUBLIC_SITE_URL;
+  if (envUrl && envUrl.trim() !== '') {
+    return envUrl.replace(/\/$/, '');
+  }
+
+  const origin = typeof window !== 'undefined' ? window.location.origin : '';
+  const isNativeOrLocalhost =
+    !origin ||
+    origin.includes('localhost') ||
+    origin.includes('127.0.0.1') ||
+    origin.startsWith('capacitor://') ||
+    origin.startsWith('file://');
+
+  if (isNativeOrLocalhost) {
+    return 'https://teacher-exam-platform.vercel.app';
+  }
+
+  return origin;
+}
+

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { testService } from '../services/testService';
 import type { Test, Attempt, TestStats, QuestionAnalysis } from '../types';
-import { formatDateArabic } from '../utils/helpers';
+import { formatDateArabic, getAppBaseUrl } from '../utils/helpers';
 import { useToast } from '../components/Toast';
 import {
   Search,
@@ -106,7 +106,7 @@ export const TestResults: React.FC = () => {
           </Link>
 
           <a
-            href={`${window.location.origin}/test/${test.id}`}
+            href={`${getAppBaseUrl()}/test/${test.id}`}
             target="_blank"
             rel="noopener noreferrer"
             className="px-4 py-2.5 bg-gold-500 hover:bg-gold-400 text-navy-950 font-extrabold rounded-xl text-xs shadow-md transition-colors"
