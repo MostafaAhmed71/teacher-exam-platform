@@ -1,4 +1,4 @@
-name: Build Android APK (منصة مقياس)
+name: Build Android Release APK (منصة مقياس - نسخة النشر)
 
 on:
   push:
@@ -7,8 +7,8 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-apk:
-    name: Build Android APK
+  build-release-apk:
+    name: Build Production Release APK
     runs-on: ubuntu-latest
 
     steps:
@@ -39,14 +39,22 @@ jobs:
       - name: Sync Capacitor Android
         run: npx cap sync android
 
-      - name: Build Android Debug APK
+      - name: Generate Release Keystore
+        run: |
+          keytool -genkey -v -keystore meqyas-release.keystore -alias meqyas -keyalg RSA -keysize 2048 -validity 10000 -storepass meqyas123456 -keypass meqyas123456 -dname "CN=Meqyas, OU=Education, O=Meqyas, L=Riyadh, S=Riyadh, C=SA"
+
+      - name: Build & Sign Production Release APK
         run: |
           cd android
           chmod +x gradlew
-          ./gradlew assembleDebug
+          ./gradlew assembleRelease
+          
+          BUILD_TOOLS_DIR=$(ls -d $ANDROID_HOME/build-tools/* | tail -n 1)
+          $BUILD_TOOLS_DIR/zipalign -v 4 app/build/outputs/apk/release/app-release-unsigned.apk app/build/outputs/apk/release/Meqyas-Release-Signed.apk
+          $BUILD_TOOLS_DIR/apksigner sign --ks ../meqyas-release.keystore --ks-pass pass:meqyas123456 app/build/outputs/apk/release/Meqyas-Release-Signed.apk
 
-      - name: Upload APK Artifact
+      - name: Upload Production Release APK Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Meqyas-App-Debug.apk
-          path: android/app/build/outputs/apk/debug/app-debug.apk
+          name: Meqyas-Production-Release.apk
+          path: android/app/build/outputs/apk/release/Meqyas-Release-Signed.apk
