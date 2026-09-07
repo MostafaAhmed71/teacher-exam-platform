@@ -4,7 +4,18 @@ import confetti from 'canvas-confetti';
 import { testService } from '../services/testService';
 import type { SubmissionResult } from '../types';
 import { calculateRating } from '../utils/helpers';
-import { Award, AlertCircle, Eye, FileCheck } from 'lucide-react';
+import {
+  Award,
+  AlertCircle,
+  Eye,
+  FileCheck,
+  CheckCircle2,
+  XCircle,
+  Star,
+  Check,
+  X,
+  Layers
+} from 'lucide-react';
 
 export const StudentTestResult: React.FC = () => {
   const { attemptId } = useParams<{ testId: string; attemptId: string }>();
@@ -12,6 +23,7 @@ export const StudentTestResult: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [result, setResult] = useState<SubmissionResult | null>(null);
   const [showReview, setShowReview] = useState(true);
+  const [filterType, setFilterType] = useState<'all' | 'correct' | 'incorrect'>('all');
 
   useEffect(() => {
     if (!attemptId) return;
@@ -20,14 +32,17 @@ export const StudentTestResult: React.FC = () => {
     const stored = sessionStorage.getItem(`result_${attemptId}`);
     if (stored) {
       const parsed = JSON.parse(stored);
-      setResult(parsed);
-      if (parsed.percentage >= 80) {
-        triggerConfetti();
+      if (parsed.questions_review && parsed.questions_review.length > 0) {
+        setResult(parsed);
+        if (parsed.percentage >= 80) {
+          triggerConfetti();
+        }
+        setLoading(false);
+        return;
       }
-      setLoading(false);
-    } else if (attemptId) {
-      loadAttemptFromDB(attemptId);
     }
+    
+    loadAttemptFromDB(attemptId);
   }, [attemptId]);
 
   const loadAttemptFromDB = async (attId: string) => {
@@ -117,11 +132,19 @@ export const StudentTestResult: React.FC = () => {
     );
   }
 
+  // Filter questions review
+  const reviews = result.questions_review || [];
+  const filteredReviews = reviews.filter((r) => {
+    if (filterType === 'correct') return r.is_correct;
+    if (filterType === 'incorrect') return !r.is_correct;
+    return true;
+  });
+
   return (
-    <div className="min-h-screen bg-slate-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-2xl mx-auto space-y-8">
+    <div className="min-h-screen bg-slate-50 py-10 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-3xl mx-auto space-y-8">
         
-        {/* Main Result Card */}
+        {/* Main Result Hero Card */}
         <div className="bg-white rounded-3xl shadow-xl border border-slate-100 p-6 sm:p-8 text-center space-y-6 relative overflow-hidden">
           
           <div className="w-20 h-20 rounded-3xl bg-navy-900 text-gold-400 flex items-center justify-center mx-auto shadow-lg">
@@ -129,25 +152,27 @@ export const StudentTestResult: React.FC = () => {
           </div>
 
           <div className="space-y-2">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800">
-              <FileCheck className="w-4 h-4" />
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
+              <FileCheck className="w-4 h-4 text-emerald-600" />
               <span>تم الانتهاء من الاختبار وتسليمه بنجاح</span>
             </span>
 
-            <h1 className="text-2xl font-extrabold text-navy-900">نتيجة الاختبار النهائي</h1>
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-navy-900 tracking-tight">
+              نتيجة الاختبار النهائي
+            </h1>
           </div>
 
           {/* Rating & Score Hero Box */}
-          <div className="bg-slate-50 p-6 rounded-3xl border border-slate-200 space-y-4">
+          <div className="bg-slate-50 p-6 rounded-3xl border border-slate-200 space-y-4 shadow-inner">
             
             <div className="space-y-1">
-              <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">الدرجة النهائية</span>
+              <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block">الدرجة النهائية</span>
               <div className="text-4xl sm:text-5xl font-extrabold text-navy-900 tracking-tight">
                 {result.score} <span className="text-2xl text-slate-400 font-semibold">/ {result.total_score}</span>
               </div>
             </div>
 
-            <div className="flex items-center justify-center gap-3">
+            <div className="flex flex-wrap items-center justify-center gap-3">
               <span className="px-4 py-1.5 rounded-full bg-gold-500 text-navy-950 font-extrabold text-sm shadow-sm">
                 النسبة المئوية: {result.percentage}%
               </span>
@@ -173,102 +198,241 @@ export const StudentTestResult: React.FC = () => {
           <div className="grid grid-cols-3 gap-3 text-xs font-bold">
             <div className="bg-emerald-50 p-4 rounded-2xl border border-emerald-200 space-y-1 text-emerald-900">
               <span className="block text-emerald-600 font-semibold">الإجابات الصحيحة</span>
-              <div className="text-xl font-extrabold">{result.correct_count}</div>
+              <div className="text-2xl font-extrabold">{result.correct_count}</div>
             </div>
 
             <div className="bg-rose-50 p-4 rounded-2xl border border-rose-200 space-y-1 text-rose-900">
               <span className="block text-rose-600 font-semibold">الإجابات الخاطئة</span>
-              <div className="text-xl font-extrabold">{result.incorrect_count}</div>
+              <div className="text-2xl font-extrabold">{result.incorrect_count}</div>
             </div>
 
             <div className="bg-slate-100 p-4 rounded-2xl border border-slate-200 space-y-1 text-slate-700">
               <span className="block text-slate-500 font-semibold">غير المجابة</span>
-              <div className="text-xl font-extrabold">{result.unanswered_count}</div>
+              <div className="text-2xl font-extrabold">{result.unanswered_count}</div>
             </div>
           </div>
 
-          {/* Review Answers Button */}
-          {result.show_correct_answers && result.questions_review && (
-            <div className="pt-4 border-t border-slate-100">
+          {/* Toggle Answer Review Section */}
+          {reviews.length > 0 && (
+            <div className="pt-2 border-t border-slate-100">
               <button
                 type="button"
                 onClick={() => setShowReview(!showReview)}
-                className="w-full py-3.5 px-6 bg-navy-900 hover:bg-navy-800 text-white font-bold rounded-2xl shadow-lg flex items-center justify-center gap-2 transition-colors text-sm"
+                className="w-full py-3.5 px-6 bg-navy-900 hover:bg-navy-800 text-white font-extrabold rounded-2xl shadow-lg flex items-center justify-center gap-2 transition-all text-sm"
               >
                 <Eye className="w-4 h-4 text-gold-400" />
-                <span>{showReview ? 'إخفاء مراجعة الإجابات' : 'مراجعة الإجابات التفصيلية'}</span>
+                <span>{showReview ? 'إخفاء مراجعة الإجابات' : 'عرض مراجعة الإجابات التفصيلية'}</span>
               </button>
             </div>
           )}
 
         </div>
 
-        {/* Answer Review Section */}
-        {showReview && result.show_correct_answers && result.questions_review && (
-          <div className="space-y-4">
-            <h2 className="text-xl font-extrabold text-navy-900 text-center">مراجعة إجاباتك بالتفصيل</h2>
+        {/* Detailed Answer Review Section */}
+        {showReview && reviews.length > 0 && (
+          <div className="space-y-6">
+            
+            {/* Section Header & Filter Controls */}
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white p-5 rounded-3xl shadow-sm border border-slate-100">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-gold-500 text-navy-950 flex items-center justify-center font-bold">
+                  <Layers className="w-5 h-5" />
+                </div>
+                <div>
+                  <h2 className="text-lg font-extrabold text-navy-900">مراجعة الإجابات بالتفصيل</h2>
+                  <p className="text-xs text-slate-500 font-medium">راجع كل سؤال لمعرفة إجابتك مقارنة بالإجابة الصحيحة المعتمَدة</p>
+                </div>
+              </div>
 
-            <div className="space-y-4">
-              {result.questions_review.map((item, idx) => {
-                let studentAnsText = item.selected_answer || 'لم تجب على السؤال';
-                let correctAnsText = item.correct_answer;
+              {/* Filter Pills */}
+              <div className="flex items-center bg-slate-100 p-1 rounded-2xl text-xs font-bold w-full sm:w-auto">
+                <button
+                  type="button"
+                  onClick={() => setFilterType('all')}
+                  className={`flex-1 sm:flex-none px-3.5 py-2 rounded-xl transition-all ${
+                    filterType === 'all' ? 'bg-navy-900 text-white shadow-sm' : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                >
+                  الكل ({reviews.length})
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setFilterType('correct')}
+                  className={`flex-1 sm:flex-none px-3.5 py-2 rounded-xl transition-all ${
+                    filterType === 'correct' ? 'bg-emerald-600 text-white shadow-sm' : 'text-slate-600 hover:text-emerald-700'
+                  }`}
+                >
+                  الصحيحة ({result.correct_count})
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setFilterType('incorrect')}
+                  className={`flex-1 sm:flex-none px-3.5 py-2 rounded-xl transition-all ${
+                    filterType === 'incorrect' ? 'bg-rose-600 text-white shadow-sm' : 'text-slate-600 hover:text-rose-700'
+                  }`}
+                >
+                  الخاطئة ({result.incorrect_count})
+                </button>
+              </div>
+            </div>
 
-                if (item.question_type === 'multiple_choice' && item.options) {
-                  const sOpt = item.options.find((o) => o.option_key === item.selected_answer);
-                  if (sOpt) studentAnsText = `(${sOpt.option_key.toUpperCase()}) ${sOpt.option_text}`;
-
-                  const cOpt = item.options.find((o) => o.option_key === item.correct_answer);
-                  if (cOpt) correctAnsText = `(${cOpt.option_key.toUpperCase()}) ${cOpt.option_text}`;
-                } else if (item.question_type === 'true_false') {
-                  if (item.selected_answer === 'true') studentAnsText = 'صح';
-                  if (item.selected_answer === 'false') studentAnsText = 'خطأ';
-                  if (item.correct_answer === 'true') correctAnsText = 'صح';
-                  if (item.correct_answer === 'false') correctAnsText = 'خطأ';
-                }
+            {/* Questions Review List */}
+            <div className="space-y-6">
+              {filteredReviews.map((item) => {
+                const questionIndex = reviews.findIndex((r) => r.question_id === item.question_id) + 1;
 
                 return (
                   <div
                     key={item.question_id}
-                    className={`bg-white p-6 rounded-3xl shadow-sm border transition-all ${
-                      item.is_correct ? 'border-emerald-200 bg-emerald-50/30' : 'border-rose-200 bg-rose-50/30'
+                    className={`bg-white rounded-3xl p-6 shadow-md border-2 transition-all space-y-5 relative overflow-hidden ${
+                      item.is_correct
+                        ? 'border-emerald-300 ring-2 ring-emerald-500/10'
+                        : 'border-rose-300 ring-2 ring-rose-500/10'
                     }`}
                   >
-                    <div className="flex items-start justify-between gap-4 mb-3">
+                    {/* Top Status Strip */}
+                    <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+                      
+                      {/* Question Index Badge */}
                       <div className="flex items-center gap-3">
-                        <span className={`w-7 h-7 rounded-lg text-white font-extrabold text-xs flex items-center justify-center ${
-                          item.is_correct ? 'bg-emerald-600' : 'bg-rose-600'
-                        }`}>
-                          {idx + 1}
+                        <span className="w-9 h-9 rounded-2xl bg-navy-900 text-gold-400 font-extrabold text-sm flex items-center justify-center shadow-md">
+                          {questionIndex}
                         </span>
-                        <h3 className="font-bold text-navy-900 text-sm">{item.question_text}</h3>
+                        <span className="text-xs font-bold text-slate-400 uppercase">السؤال {questionIndex}</span>
                       </div>
 
-                      <span className={`px-3 py-1 rounded-full text-xs font-bold shrink-0 ${
-                        item.is_correct ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'
-                      }`}>
-                        {item.is_correct ? 'إجابة صحيحة ✓' : 'إجابة خاطئة ✗'}
-                      </span>
+                      {/* Result Badge */}
+                      <div className="flex items-center gap-2">
+                        {item.is_correct ? (
+                          <span className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-extrabold bg-emerald-600 text-white shadow-sm">
+                            <CheckCircle2 className="w-4 h-4" />
+                            <span>إجابة صحيحة (+{item.points} نقاط)</span>
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-extrabold bg-rose-600 text-white shadow-sm">
+                            <XCircle className="w-4 h-4" />
+                            <span>إجابة خاطئة (0 من {item.points} نقاط)</span>
+                          </span>
+                        )}
+                      </div>
+
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs font-semibold pt-2 border-t border-slate-100">
-                      <div className="p-3 rounded-xl bg-white border border-slate-200 space-y-1">
-                        <span className="text-slate-400 block">إجابتك:</span>
-                        <span className={`font-bold block ${item.is_correct ? 'text-emerald-700' : 'text-rose-700'}`}>
-                          {studentAnsText}
-                        </span>
-                      </div>
+                    {/* Question Text */}
+                    <h3 className="text-base sm:text-lg font-extrabold text-navy-900 leading-relaxed">
+                      {item.question_text}
+                    </h3>
 
-                      <div className="p-3 rounded-xl bg-white border border-slate-200 space-y-1">
-                        <span className="text-slate-400 block">الإجابة الصحيحة:</span>
-                        <span className="font-bold text-emerald-700 block">
-                          {correctAnsText}
-                        </span>
+                    {/* Multiple Choice Options Visual Review */}
+                    {item.question_type === 'multiple_choice' && item.options && item.options.length > 0 && (
+                      <div className="space-y-2.5 pt-2">
+                        <span className="text-xs font-bold text-slate-400 block">خيارات السؤال وتصحيحها:</span>
+                        
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          {item.options.map((opt) => {
+                            const isStudentChoice = item.selected_answer === opt.option_key;
+                            const isCorrectChoice = item.correct_answer === opt.option_key;
+
+                            let optionCardStyle = 'bg-slate-50 text-slate-700 border-slate-200';
+                            let badgeContent = null;
+
+                            if (isStudentChoice && isCorrectChoice) {
+                              // Student chose correct answer!
+                              optionCardStyle = 'bg-emerald-600 text-white border-emerald-700 shadow-md font-bold';
+                              badgeContent = (
+                                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-800 text-emerald-100 text-[11px]">
+                                  <Check className="w-3.5 h-3.5" />
+                                  إجابتك (صحيحة)
+                                </span>
+                              );
+                            } else if (isStudentChoice && !isCorrectChoice) {
+                              // Student chose wrong answer!
+                              optionCardStyle = 'bg-rose-600 text-white border-rose-700 shadow-md font-bold';
+                              badgeContent = (
+                                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-rose-900 text-rose-100 text-[11px]">
+                                  <X className="w-3.5 h-3.5" />
+                                  إجابتك المختارة (خاطئة)
+                                </span>
+                              );
+                            } else if (isCorrectChoice) {
+                              // Correct answer that student missed
+                              optionCardStyle = 'bg-gold-50 text-navy-950 border-gold-400 ring-2 ring-gold-400/50 font-bold';
+                              badgeContent = (
+                                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-gold-500 text-navy-950 text-[11px]">
+                                  <Star className="w-3.5 h-3.5 fill-navy-950 text-navy-950" />
+                                  الإجابة الصحيحة المعتمَدة
+                                </span>
+                              );
+                            }
+
+                            return (
+                              <div
+                                key={opt.id}
+                                className={`p-3.5 rounded-2xl border-2 flex items-center justify-between gap-3 text-xs transition-all ${optionCardStyle}`}
+                              >
+                                <div className="flex items-center gap-2.5">
+                                  <span className={`w-6 h-6 rounded-lg text-[11px] font-extrabold uppercase flex items-center justify-center shrink-0 ${
+                                    isStudentChoice || isCorrectChoice ? 'bg-black/20 text-white' : 'bg-slate-200 text-slate-700'
+                                  }`}>
+                                    {opt.option_key}
+                                  </span>
+                                  <span>{opt.option_text}</span>
+                                </div>
+
+                                {badgeContent}
+                              </div>
+                            );
+                          })}
+                        </div>
                       </div>
-                    </div>
+                    )}
+
+                    {/* True / False Visual Review */}
+                    {item.question_type === 'true_false' && (
+                      <div className="space-y-2.5 pt-2">
+                        <span className="text-xs font-bold text-slate-400 block">تصحيح الإجابة:</span>
+
+                        <div className="grid grid-cols-2 gap-4">
+                          {['true', 'false'].map((tfVal) => {
+                            const labelText = tfVal === 'true' ? 'صح' : 'خطأ';
+                            const isStudentChoice = item.selected_answer === tfVal;
+                            const isCorrectChoice = item.correct_answer === tfVal;
+
+                            let optionCardStyle = 'bg-slate-50 text-slate-700 border-slate-200';
+                            let badgeText = null;
+
+                            if (isStudentChoice && isCorrectChoice) {
+                              optionCardStyle = 'bg-emerald-600 text-white border-emerald-700 shadow-md font-bold';
+                              badgeText = 'إجابتك (صحيحة) ✓';
+                            } else if (isStudentChoice && !isCorrectChoice) {
+                              optionCardStyle = 'bg-rose-600 text-white border-rose-700 shadow-md font-bold';
+                              badgeText = 'إجابتك (خاطئة) ✗';
+                            } else if (isCorrectChoice) {
+                              optionCardStyle = 'bg-gold-50 text-navy-950 border-gold-400 ring-2 ring-gold-400/50 font-bold';
+                              badgeText = 'الإجابة الصحيحة المعتمَدة ★';
+                            }
+
+                            return (
+                              <div
+                                key={tfVal}
+                                className={`p-4 rounded-2xl border-2 text-center text-sm transition-all space-y-1 ${optionCardStyle}`}
+                              >
+                                <div className="font-extrabold text-base">{labelText}</div>
+                                {badgeText && (
+                                  <span className="block text-[11px] font-bold opacity-90">{badgeText}</span>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+
                   </div>
                 );
               })}
             </div>
+
           </div>
         )}
 
