@@ -39,7 +39,7 @@ jobs:
       - name: Build Xcode Project (Simulator / App Archive)
         run: |
           cd ios/App
-          xcodebuild -scheme App -workspace App.xcworkspace -configuration Release -sdk iphonesimulator -derivedDataPath build CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO
+          xcodebuild -scheme App -project App.xcodeproj -configuration Release -sdk iphonesimulator -derivedDataPath build CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO
 
       - name: Compress iOS App Directory for Xcode & TestFlight
         run: |
