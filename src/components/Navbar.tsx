@@ -83,73 +83,54 @@ export const Navbar: React.FC = () => {
                 </button>
               </div>
             </div>
-          ) : (
-            <div className="hidden md:flex items-center gap-3">
-              <Link
-                to="/login"
-                className="px-4 py-2 text-sm font-bold bg-gold-500 hover:bg-gold-400 text-navy-950 rounded-lg transition-colors shadow-sm"
-              >
-                تسجيل دخول المعلم
-              </Link>
-            </div>
-          )}
+          ) : null}
 
           {/* Mobile Menu Button */}
-          <div className="md:hidden">
-            <button
-              onClick={() => setMobileOpen(!mobileOpen)}
-              className="p-2 rounded-lg text-slate-300 hover:text-white hover:bg-navy-800 focus:outline-none"
-            >
-              {mobileOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-            </button>
-          </div>
+          {user && (
+            <div className="md:hidden">
+              <button
+                onClick={() => setMobileOpen(!mobileOpen)}
+                className="p-2 rounded-lg text-slate-300 hover:text-white hover:bg-navy-800 focus:outline-none"
+              >
+                {mobileOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
       {/* Mobile Drawer */}
-      {mobileOpen && (
+      {mobileOpen && user && (
         <div className="md:hidden bg-navy-950 border-t border-navy-800 px-4 pt-2 pb-4 space-y-2">
-          {user ? (
-            <>
-              <div className="px-3 py-2 text-sm font-semibold text-gold-400 border-b border-navy-800 mb-2">
-                أهلاً، {user.name}
-              </div>
-              <Link
-                to="/dashboard"
-                onClick={() => setMobileOpen(false)}
-                className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-200 hover:bg-navy-800 text-sm font-semibold"
-              >
-                <LayoutDashboard className="w-5 h-5 text-gold-400" />
-                لوحة التحكم
-              </Link>
-              <Link
-                to="/tests/create"
-                onClick={() => setMobileOpen(false)}
-                className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-navy-950 bg-gold-500 hover:bg-gold-400 text-sm font-bold"
-              >
-                <PlusCircle className="w-5 h-5" />
-                إنشاء اختبار جديد
-              </Link>
-              <button
-                onClick={() => {
-                  setMobileOpen(false);
-                  handleLogout();
-                }}
-                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-rose-300 hover:bg-rose-950/40 text-sm font-semibold border border-rose-900/40"
-              >
-                <LogOut className="w-5 h-5 text-rose-400" />
-                تسجيل الخروج
-              </button>
-            </>
-          ) : (
-            <Link
-              to="/login"
-              onClick={() => setMobileOpen(false)}
-              className="block text-center px-4 py-2.5 rounded-lg text-navy-950 bg-gold-500 font-bold"
-            >
-              تسجيل دخول المعلم
-            </Link>
-          )}
+          <div className="px-3 py-2 text-sm font-semibold text-gold-400 border-b border-navy-800 mb-2">
+            أهلاً، {user.name}
+          </div>
+          <Link
+            to="/dashboard"
+            onClick={() => setMobileOpen(false)}
+            className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-200 hover:bg-navy-800 text-sm font-semibold"
+          >
+            <LayoutDashboard className="w-5 h-5 text-gold-400" />
+            لوحة التحكم
+          </Link>
+          <Link
+            to="/tests/create"
+            onClick={() => setMobileOpen(false)}
+            className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-navy-950 bg-gold-500 hover:bg-gold-400 text-sm font-bold"
+          >
+            <PlusCircle className="w-5 h-5" />
+            إنشاء اختبار جديد
+          </Link>
+          <button
+            onClick={() => {
+              setMobileOpen(false);
+              handleLogout();
+            }}
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-rose-300 hover:bg-rose-950/40 text-sm font-semibold border border-rose-900/40"
+          >
+            <LogOut className="w-5 h-5 text-rose-400" />
+            تسجيل الخروج
+          </button>
         </div>
       )}
     </header>
