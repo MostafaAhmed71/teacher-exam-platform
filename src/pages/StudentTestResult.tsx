@@ -11,7 +11,7 @@ export const StudentTestResult: React.FC = () => {
 
   const [loading, setLoading] = useState(true);
   const [result, setResult] = useState<SubmissionResult | null>(null);
-  const [showReview, setShowReview] = useState(false);
+  const [showReview, setShowReview] = useState(true);
 
   useEffect(() => {
     if (!attemptId) return;

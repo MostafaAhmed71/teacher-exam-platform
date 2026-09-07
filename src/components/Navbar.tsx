@@ -14,8 +14,8 @@ export const Navbar: React.FC = () => {
     navigate('/login');
   };
 
-  // Hide Navbar on student exam taking view for distraction-free exam environment
-  if (location.pathname.endsWith('/start')) {
+  // Hide Navbar completely on all student test views for clean distraction-free student experience
+  if (location.pathname.startsWith('/test/')) {
     return null;
   }
 
