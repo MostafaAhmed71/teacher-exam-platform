@@ -168,10 +168,10 @@ export const StudentTestExam: React.FC = () => {
       {/* Top Fixed Bar */}
       <div className="max-w-4xl w-full mx-auto space-y-4">
         
-        <div className="bg-navy-900 text-white p-4 sm:p-6 rounded-3xl shadow-lg flex items-center justify-between gap-4 border border-navy-800">
-          <div>
-            <h1 className="text-lg sm:text-xl font-extrabold tracking-tight">{test.title}</h1>
-            <p className="text-xs text-slate-300 font-medium mt-0.5">
+        <div className="bg-navy-900 text-white p-4 sm:p-6 rounded-3xl shadow-lg flex flex-col sm:flex-row sm:items-center justify-between gap-3 border border-navy-800">
+          <div className="min-w-0">
+            <h1 className="text-base sm:text-xl font-extrabold tracking-tight break-words">{test.title}</h1>
+            <p className="text-xs text-slate-300 font-medium mt-0.5 break-words">
               الطالب: <strong>{studentInfo?.studentName}</strong> | الصف: <strong>{studentInfo?.studentGrade}</strong>
             </p>
           </div>
@@ -179,7 +179,7 @@ export const StudentTestExam: React.FC = () => {
           {/* Countdown Timer Badge */}
           {remainingSeconds !== null && (
             <div
-              className={`flex items-center gap-2 px-4 py-2 rounded-2xl border font-mono font-bold text-sm shrink-0 transition-all ${
+              className={`flex items-center justify-center gap-2 px-4 py-2 rounded-2xl border font-mono font-bold text-sm shrink-0 self-start sm:self-auto transition-all ${
                 isTimerLow
                   ? 'bg-rose-950 text-rose-300 border-rose-700 animate-pulse'
                   : 'bg-navy-800 text-gold-400 border-navy-700'
@@ -192,7 +192,7 @@ export const StudentTestExam: React.FC = () => {
         </div>
 
         {/* Question Navigation Index Bar */}
-        <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-between gap-3 overflow-x-auto">
+        <div className="bg-white p-3 sm:p-4 rounded-2xl shadow-sm border border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-center gap-2 text-xs font-bold text-slate-700 shrink-0">
             <span>الأسئلة:</span>
             <span className="text-navy-900 font-extrabold">{answeredCount} من {questions.length} مُجاب</span>
@@ -226,18 +226,18 @@ export const StudentTestExam: React.FC = () => {
 
       {/* Main Question Execution Box */}
       <div className="max-w-4xl w-full mx-auto my-6">
-        <div className="bg-white p-6 sm:p-8 rounded-3xl shadow-lg border border-slate-100 space-y-6">
+        <div className="bg-white p-4 sm:p-6 rounded-3xl shadow-lg border border-slate-100 space-y-6">
           
           {/* Question Title & Points Header */}
-          <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-4">
             <div className="flex items-center gap-3">
-              <span className="w-9 h-9 rounded-xl bg-navy-900 text-gold-400 font-extrabold text-sm flex items-center justify-center">
+              <span className="w-9 h-9 rounded-xl bg-navy-900 text-gold-400 font-extrabold text-sm flex items-center justify-center shrink-0">
                 {currentIndex + 1}
               </span>
               <span className="text-xs font-bold text-slate-400">السؤال {currentIndex + 1} من {questions.length}</span>
             </div>
 
-            <span className="px-3 py-1 bg-slate-100 text-navy-900 font-bold text-xs rounded-full">
+            <span className="self-start sm:self-auto px-3 py-1 bg-slate-100 text-navy-900 font-bold text-xs rounded-full">
               الدرجة المستحقة: {currentQuestion.points}
             </span>
           </div>
@@ -258,22 +258,22 @@ export const StudentTestExam: React.FC = () => {
                     key={opt.id}
                     type="button"
                     onClick={() => handleSelectOption(currentQuestion.id, opt.option_key)}
-                    className={`w-full flex items-center justify-between p-4 rounded-2xl border-2 text-right transition-all font-semibold text-sm ${
+                    className={`w-full flex items-start sm:items-center justify-between gap-3 p-3.5 sm:p-4 rounded-2xl border-2 text-right transition-all font-semibold text-sm ${
                       isSelected
                         ? 'bg-navy-900 text-white border-navy-900 shadow-md'
                         : 'bg-slate-50 text-slate-800 border-slate-200 hover:bg-slate-100 hover:border-slate-300'
                     }`}
                   >
-                    <div className="flex items-center gap-3">
-                      <span className={`w-7 h-7 rounded-lg text-xs font-extrabold uppercase flex items-center justify-center ${
+                    <div className="flex items-start sm:items-center gap-3 min-w-0">
+                      <span className={`w-7 h-7 rounded-lg text-xs font-extrabold uppercase flex items-center justify-center shrink-0 ${
                         isSelected ? 'bg-gold-500 text-navy-950' : 'bg-slate-200 text-slate-700'
                       }`}>
                         {opt.option_key}
                       </span>
-                      <span>{opt.option_text}</span>
+                      <span className="break-words leading-relaxed">{opt.option_text}</span>
                     </div>
 
-                    {isSelected && <CheckCircle2 className="w-5 h-5 text-gold-400" />}
+                    {isSelected && <CheckCircle2 className="w-5 h-5 text-gold-400 shrink-0 mt-0.5 sm:mt-0" />}
                   </button>
                 );
               })}
@@ -314,14 +314,14 @@ export const StudentTestExam: React.FC = () => {
 
       {/* Bottom Footer Navigation Bar */}
       <div className="max-w-4xl w-full mx-auto">
-        <div className="bg-white p-4 rounded-3xl shadow-lg border border-slate-100 flex items-center justify-between gap-4">
+        <div className="bg-white p-3 sm:p-4 rounded-3xl shadow-lg border border-slate-100 flex items-center justify-between gap-2 sm:gap-4">
           
           {/* Previous Question Button */}
           <button
             type="button"
             disabled={currentIndex === 0}
             onClick={() => setCurrentIndex((prev) => prev - 1)}
-            className="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs flex items-center gap-1.5 disabled:opacity-30 transition-colors"
+            className="px-3 sm:px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs flex items-center gap-1.5 disabled:opacity-30 transition-colors"
           >
             <ArrowRight className="w-4 h-4" />
             <span>السابق</span>
@@ -332,7 +332,7 @@ export const StudentTestExam: React.FC = () => {
             <button
               type="button"
               onClick={() => setCurrentIndex((prev) => prev + 1)}
-              className="px-6 py-2.5 bg-navy-900 hover:bg-navy-800 text-white font-bold rounded-xl text-xs flex items-center gap-1.5 shadow-md transition-colors"
+              className="px-4 sm:px-6 py-2.5 bg-navy-900 hover:bg-navy-800 text-white font-bold rounded-xl text-xs flex items-center gap-1.5 shadow-md transition-colors"
             >
               <span>التالي</span>
               <ArrowLeft className="w-4 h-4" />
@@ -341,10 +341,11 @@ export const StudentTestExam: React.FC = () => {
             <button
               type="button"
               onClick={() => setConfirmModalOpen(true)}
-              className="px-6 py-2.5 bg-gold-500 hover:bg-gold-400 text-navy-950 font-extrabold rounded-xl text-xs flex items-center gap-1.5 shadow-lg transition-colors"
+              className="px-3 sm:px-6 py-2.5 bg-gold-500 hover:bg-gold-400 text-navy-950 font-extrabold rounded-xl text-xs flex items-center gap-1.5 shadow-lg transition-colors"
             >
               <Send className="w-4 h-4" />
-              <span>إنهاء وتسليم الاختبار</span>
+              <span className="hidden sm:inline">إنهاء وتسليم الاختبار</span>
+              <span className="sm:hidden">تسليم</span>
             </button>
           )}
 
@@ -371,7 +372,7 @@ export const StudentTestExam: React.FC = () => {
             </p>
           </div>
 
-          <div className="flex items-center justify-end gap-3 pt-4">
+          <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-3 pt-4">
             <button
               type="button"
               onClick={() => setConfirmModalOpen(false)}
@@ -384,7 +385,7 @@ export const StudentTestExam: React.FC = () => {
               type="button"
               disabled={submitting}
               onClick={executeFinalSubmission}
-              className="px-6 py-2.5 bg-navy-900 hover:bg-navy-800 text-white font-extrabold rounded-xl text-xs shadow-md transition-colors flex items-center gap-2 disabled:opacity-50"
+              className="px-6 py-2.5 bg-navy-900 hover:bg-navy-800 text-white font-extrabold rounded-xl text-xs shadow-md transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
             >
               {submitting ? (
                 <div className="w-4 h-4 border-2 border-white border-t-gold-500 rounded-full animate-spin"></div>

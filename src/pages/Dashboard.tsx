@@ -120,7 +120,7 @@ export const Dashboard: React.FC = () => {
   });
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6 sm:space-y-8">
       
       {/* Top Banner & Welcome */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-navy-900 text-white p-6 sm:p-8 rounded-3xl shadow-xl border border-navy-800 relative overflow-hidden">
@@ -136,10 +136,10 @@ export const Dashboard: React.FC = () => {
           </p>
         </div>
 
-        <div className="z-10 shrink-0">
+        <div className="z-10 shrink-0 w-full md:w-auto">
           <Link
             to="/tests/create"
-            className="inline-flex items-center gap-2.5 px-6 py-3.5 bg-gold-500 hover:bg-gold-400 text-navy-950 font-extrabold rounded-2xl shadow-lg transition-all transform hover:-translate-y-0.5"
+            className="inline-flex w-full md:w-auto items-center justify-center gap-2.5 px-6 py-3.5 bg-gold-500 hover:bg-gold-400 text-navy-950 font-extrabold rounded-2xl shadow-lg transition-all transform hover:-translate-y-0.5"
           >
             <PlusCircle className="w-5 h-5" />
             <span>إنشاء اختبار جديد</span>
@@ -201,7 +201,7 @@ export const Dashboard: React.FC = () => {
       </div>
 
       {/* Tests Table Section */}
-      <div className="bg-white rounded-3xl shadow-sm border border-slate-100 p-6 space-y-6">
+      <div className="bg-white rounded-3xl shadow-sm border border-slate-100 p-4 sm:p-6 space-y-6 overflow-hidden">
         
         {/* Table Header Controls */}
         <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
@@ -261,169 +261,267 @@ export const Dashboard: React.FC = () => {
             </Link>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-right border-collapse">
-              <thead>
-                <tr className="border-b border-slate-200 text-xs font-bold text-slate-500 bg-slate-50/50">
-                  <th className="py-3.5 px-4 rounded-r-xl">الاختبار</th>
-                  <th className="py-3.5 px-4">المادة</th>
-                  <th className="py-3.5 px-4">الصف</th>
-                  <th className="py-3.5 px-4 text-center">الأسئلة</th>
-                  <th className="py-3.5 px-4 text-center">المشاركون</th>
-                  <th className="py-3.5 px-4 text-center">الحالة</th>
-                  <th className="py-3.5 px-4 text-left rounded-l-xl">الإجراءات</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 text-sm">
-                {filteredTests.map((test) => {
-                  const testUrl = `${getAppBaseUrl()}/test/${test.id}`;
-
-                  return (
-                    <tr key={test.id} className="hover:bg-slate-50/80 transition-colors">
-                      
-                      {/* Title & Code */}
-                      <td className="py-4 px-4 font-bold text-navy-900 max-w-xs">
-                        <div className="truncate" title={test.title}>{test.title}</div>
-                        <div className="flex items-center gap-2 mt-1">
-                          <span className="text-xs font-mono bg-slate-100 text-slate-600 px-2 py-0.5 rounded border border-slate-200">
-                            {test.id}
-                          </span>
+          <>
+            {/* Mobile cards */}
+            <div className="space-y-4 lg:hidden">
+              {filteredTests.map((test) => {
+                const testUrl = `${getAppBaseUrl()}/test/${test.id}`;
+                return (
+                  <div
+                    key={test.id}
+                    className="rounded-2xl border border-slate-200 bg-slate-50/50 p-4 space-y-4"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0 space-y-1">
+                        <h3 className="font-extrabold text-navy-900 text-sm leading-snug break-words">
+                          {test.title}
+                        </h3>
+                        <div className="flex flex-wrap items-center gap-2 text-xs text-slate-500">
+                          <span className="font-semibold text-slate-700">{test.subject}</span>
+                          <span>·</span>
+                          <span className="font-semibold text-slate-700">{test.grade}</span>
                           {test.duration_minutes && (
-                            <span className="text-xs text-slate-500 flex items-center gap-1">
-                              <Clock className="w-3 h-3" />
-                              {test.duration_minutes} دقيقة
-                            </span>
+                            <>
+                              <span>·</span>
+                              <span className="flex items-center gap-1">
+                                <Clock className="w-3 h-3" />
+                                {test.duration_minutes} د
+                              </span>
+                            </>
                           )}
                         </div>
-                      </td>
-
-                      {/* Subject */}
-                      <td className="py-4 px-4 text-slate-700 font-semibold">{test.subject}</td>
-
-                      {/* Grade */}
-                      <td className="py-4 px-4 text-slate-700 font-semibold">{test.grade}</td>
-
-                      {/* Questions Count */}
-                      <td className="py-4 px-4 text-center">
-                        <span className="inline-flex items-center justify-center px-2.5 py-1 rounded-lg bg-slate-100 text-navy-900 font-bold text-xs">
-                          {test.questions_count || 0} سؤال
+                      </div>
+                      {test.status === 'published' && (
+                        <span className="shrink-0 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                          منشور
                         </span>
-                      </td>
-
-                      {/* Participants Count */}
-                      <td className="py-4 px-4 text-center">
-                        <span className="inline-flex items-center justify-center px-2.5 py-1 rounded-lg bg-blue-50 text-blue-700 font-bold text-xs">
-                          {test.attempts_count || 0} طالب
+                      )}
+                      {test.status === 'draft' && (
+                        <span className="shrink-0 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold bg-amber-50 text-amber-700 border border-amber-200">
+                          مسودة
                         </span>
-                      </td>
+                      )}
+                      {test.status === 'stopped' && (
+                        <span className="shrink-0 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold bg-rose-50 text-rose-700 border border-rose-200">
+                          متوقف
+                        </span>
+                      )}
+                    </div>
 
-                      {/* Status */}
-                      <td className="py-4 px-4 text-center">
-                        {test.status === 'published' && (
-                          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                            منشور
+                    <div className="grid grid-cols-2 gap-2 text-xs">
+                      <div className="rounded-xl bg-white border border-slate-200 px-3 py-2 font-bold text-navy-900">
+                        {test.questions_count || 0} سؤال
+                      </div>
+                      <div className="rounded-xl bg-white border border-slate-200 px-3 py-2 font-bold text-blue-700">
+                        {test.attempts_count || 0} طالب
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2">
+                      <Link
+                        to={`/tests/${test.id}/results`}
+                        className="inline-flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl text-xs font-bold bg-purple-50 text-purple-700 border border-purple-200/70"
+                      >
+                        <BarChart3 className="w-3.5 h-3.5" />
+                        النتائج
+                      </Link>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSelectedTestForShare(test);
+                          setShareModalOpen(true);
+                        }}
+                        className="inline-flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl text-xs font-bold bg-amber-50 text-amber-800 border border-amber-200/70"
+                      >
+                        <Share2 className="w-3.5 h-3.5" />
+                        مشاركة
+                      </button>
+                      <Link
+                        to={`/tests/${test.id}/edit`}
+                        className="inline-flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl text-xs font-bold bg-blue-50 text-blue-700 border border-blue-200/70"
+                      >
+                        <Edit3 className="w-3.5 h-3.5" />
+                        تعديل
+                      </Link>
+                      <a
+                        href={testUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl text-xs font-bold bg-white text-slate-700 border border-slate-200"
+                      >
+                        <ExternalLink className="w-3.5 h-3.5" />
+                        معاينة
+                      </a>
+                      <button
+                        type="button"
+                        onClick={() => handleToggleStatus(test)}
+                        className={`inline-flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl text-xs font-bold border ${
+                          test.status === 'published'
+                            ? 'bg-orange-50 text-orange-700 border-orange-200/70'
+                            : 'bg-emerald-50 text-emerald-700 border-emerald-200/70'
+                        }`}
+                      >
+                        <Power className="w-3.5 h-3.5" />
+                        {test.status === 'published' ? 'إيقاف' : 'تفعيل'}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setTestToDelete(test);
+                          setDeleteModalOpen(true);
+                        }}
+                        className="inline-flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl text-xs font-bold bg-rose-50 text-rose-700 border border-rose-200/70"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                        حذف
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Desktop table */}
+            <div className="hidden lg:block overflow-x-auto -mx-1">
+              <table className="w-full text-right border-collapse min-w-[900px]">
+                <thead>
+                  <tr className="border-b border-slate-200 text-xs font-bold text-slate-500 bg-slate-50/50">
+                    <th className="py-3.5 px-4 rounded-r-xl">الاختبار</th>
+                    <th className="py-3.5 px-4">المادة</th>
+                    <th className="py-3.5 px-4">الصف</th>
+                    <th className="py-3.5 px-4 text-center">الأسئلة</th>
+                    <th className="py-3.5 px-4 text-center">المشاركون</th>
+                    <th className="py-3.5 px-4 text-center">الحالة</th>
+                    <th className="py-3.5 px-4 text-left rounded-l-xl">الإجراءات</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 text-sm">
+                  {filteredTests.map((test) => {
+                    const testUrl = `${getAppBaseUrl()}/test/${test.id}`;
+
+                    return (
+                      <tr key={test.id} className="hover:bg-slate-50/80 transition-colors">
+                        <td className="py-4 px-4 font-bold text-navy-900 max-w-xs">
+                          <div className="truncate" title={test.title}>{test.title}</div>
+                          <div className="flex items-center gap-2 mt-1">
+                            <span className="text-xs font-mono bg-slate-100 text-slate-600 px-2 py-0.5 rounded border border-slate-200">
+                              {test.id}
+                            </span>
+                            {test.duration_minutes && (
+                              <span className="text-xs text-slate-500 flex items-center gap-1">
+                                <Clock className="w-3 h-3" />
+                                {test.duration_minutes} دقيقة
+                              </span>
+                            )}
+                          </div>
+                        </td>
+                        <td className="py-4 px-4 text-slate-700 font-semibold">{test.subject}</td>
+                        <td className="py-4 px-4 text-slate-700 font-semibold">{test.grade}</td>
+                        <td className="py-4 px-4 text-center">
+                          <span className="inline-flex items-center justify-center px-2.5 py-1 rounded-lg bg-slate-100 text-navy-900 font-bold text-xs">
+                            {test.questions_count || 0} سؤال
                           </span>
-                        )}
-                        {test.status === 'draft' && (
-                          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-50 text-amber-700 border border-amber-200">
-                            <span className="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
-                            مسودة
+                        </td>
+                        <td className="py-4 px-4 text-center">
+                          <span className="inline-flex items-center justify-center px-2.5 py-1 rounded-lg bg-blue-50 text-blue-700 font-bold text-xs">
+                            {test.attempts_count || 0} طالب
                           </span>
-                        )}
-                        {test.status === 'stopped' && (
-                          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-rose-50 text-rose-700 border border-rose-200">
-                            <span className="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
-                            متوقف
-                          </span>
-                        )}
-                      </td>
-
-                      {/* Actions */}
-                      <td className="py-4 px-4 text-left">
-                        <div className="flex flex-wrap items-center justify-end gap-1.5 min-w-[280px]">
-                          
-                          {/* Results */}
-                          <Link
-                            to={`/tests/${test.id}/results`}
-                            title="عرض نتائج وعلامات الطلاب"
-                            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-bold bg-purple-50 text-purple-700 hover:bg-purple-100 border border-purple-200/70 transition-all shadow-xs"
-                          >
-                            <BarChart3 className="w-3.5 h-3.5" />
-                            <span>النتائج</span>
-                          </Link>
-
-                          {/* Share */}
-                          <button
-                            onClick={() => {
-                              setSelectedTestForShare(test);
-                              setShareModalOpen(true);
-                            }}
-                            title="مشاركة ورابط الاختبار"
-                            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-bold bg-amber-50 text-amber-800 hover:bg-amber-100 border border-amber-200/70 transition-all shadow-xs"
-                          >
-                            <Share2 className="w-3.5 h-3.5 text-amber-600" />
-                            <span>مشاركة</span>
-                          </button>
-
-                          {/* Edit */}
-                          <Link
-                            to={`/tests/${test.id}/edit`}
-                            title="تعديل بيانات وأسئلة الاختبار"
-                            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-bold bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200/70 transition-all shadow-xs"
-                          >
-                            <Edit3 className="w-3.5 h-3.5" />
-                            <span>تعديل</span>
-                          </Link>
-
-                          {/* Preview / Live Student Test */}
-                          <a
-                            href={testUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            title="فتح رابط الاختبار للطلاب"
-                            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-bold bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200 transition-all shadow-xs"
-                          >
-                            <ExternalLink className="w-3.5 h-3.5 text-slate-500" />
-                            <span>معاينة</span>
-                          </a>
-
-                          {/* Toggle Active/Stopped Status */}
-                          <button
-                            onClick={() => handleToggleStatus(test)}
-                            title={test.status === 'published' ? 'إيقاف استقبال الإجابات' : 'نشر وتفعيل الاختبار'}
-                            className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-bold border transition-all shadow-xs ${
-                              test.status === 'published'
-                                ? 'bg-orange-50 text-orange-700 hover:bg-orange-100 border-orange-200/70'
-                                : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border-emerald-200/70'
-                            }`}
-                          >
-                            <Power className="w-3.5 h-3.5" />
-                            <span>{test.status === 'published' ? 'إيقاف' : 'تفعيل'}</span>
-                          </button>
-
-                          {/* Delete */}
-                          <button
-                            onClick={() => {
-                              setTestToDelete(test);
-                              setDeleteModalOpen(true);
-                            }}
-                            title="حذف الاختبار نهائياً"
-                            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-bold bg-rose-50 text-rose-700 hover:bg-rose-100 border border-rose-200/70 transition-all shadow-xs"
-                          >
-                            <Trash2 className="w-3.5 h-3.5 text-rose-600" />
-                            <span>حذف</span>
-                          </button>
-
-                        </div>
-                      </td>
-
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
+                        </td>
+                        <td className="py-4 px-4 text-center">
+                          {test.status === 'published' && (
+                            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                              منشور
+                            </span>
+                          )}
+                          {test.status === 'draft' && (
+                            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-50 text-amber-700 border border-amber-200">
+                              <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+                              مسودة
+                            </span>
+                          )}
+                          {test.status === 'stopped' && (
+                            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-rose-50 text-rose-700 border border-rose-200">
+                              <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
+                              متوقف
+                            </span>
+                          )}
+                        </td>
+                        <td className="py-4 px-4 text-left">
+                          <div className="flex flex-wrap items-center justify-end gap-1.5">
+                            <Link
+                              to={`/tests/${test.id}/results`}
+                              title="عرض نتائج وعلامات الطلاب"
+                              className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-bold bg-purple-50 text-purple-700 hover:bg-purple-100 border border-purple-200/70 transition-all"
+                            >
+                              <BarChart3 className="w-3.5 h-3.5" />
+                              <span>النتائج</span>
+                            </Link>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setSelectedTestForShare(test);
+                                setShareModalOpen(true);
+                              }}
+                              title="مشاركة ورابط الاختبار"
+                              className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-bold bg-amber-50 text-amber-800 hover:bg-amber-100 border border-amber-200/70 transition-all"
+                            >
+                              <Share2 className="w-3.5 h-3.5 text-amber-600" />
+                              <span>مشاركة</span>
+                            </button>
+                            <Link
+                              to={`/tests/${test.id}/edit`}
+                              title="تعديل بيانات وأسئلة الاختبار"
+                              className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-bold bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200/70 transition-all"
+                            >
+                              <Edit3 className="w-3.5 h-3.5" />
+                              <span>تعديل</span>
+                            </Link>
+                            <a
+                              href={testUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              title="فتح رابط الاختبار للطلاب"
+                              className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-bold bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200 transition-all"
+                            >
+                              <ExternalLink className="w-3.5 h-3.5 text-slate-500" />
+                              <span>معاينة</span>
+                            </a>
+                            <button
+                              type="button"
+                              onClick={() => handleToggleStatus(test)}
+                              title={test.status === 'published' ? 'إيقاف استقبال الإجابات' : 'نشر وتفعيل الاختبار'}
+                              className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-bold border transition-all ${
+                                test.status === 'published'
+                                  ? 'bg-orange-50 text-orange-700 hover:bg-orange-100 border-orange-200/70'
+                                  : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border-emerald-200/70'
+                              }`}
+                            >
+                              <Power className="w-3.5 h-3.5" />
+                              <span>{test.status === 'published' ? 'إيقاف' : 'تفعيل'}</span>
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setTestToDelete(test);
+                                setDeleteModalOpen(true);
+                              }}
+                              title="حذف الاختبار نهائياً"
+                              className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-bold bg-rose-50 text-rose-700 hover:bg-rose-100 border border-rose-200/70 transition-all"
+                            >
+                              <Trash2 className="w-3.5 h-3.5 text-rose-600" />
+                              <span>حذف</span>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </>
         )}
 
       </div>
@@ -446,16 +544,17 @@ export const Dashboard: React.FC = () => {
 
             <div>
               <label className="block text-xs font-bold text-slate-600 mb-1">رابط الاختبار الفريد:</label>
-              <div className="flex items-center gap-2">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
                 <input
                   type="text"
                   readOnly
                   value={`${getAppBaseUrl()}/test/${selectedTestForShare.id}`}
-                  className="w-full p-2.5 bg-slate-100 border border-slate-200 rounded-xl text-xs font-mono text-slate-700 dir-ltr text-right"
+                  className="w-full min-w-0 p-2.5 bg-slate-100 border border-slate-200 rounded-xl text-xs font-mono text-slate-700 dir-ltr text-left truncate"
                 />
                 <button
+                  type="button"
                   onClick={() => handleCopyLink(selectedTestForShare.id)}
-                  className="px-4 py-2.5 bg-navy-900 hover:bg-navy-800 text-white text-xs font-bold rounded-xl flex items-center gap-1.5 shrink-0"
+                  className="px-4 py-2.5 bg-navy-900 hover:bg-navy-800 text-white text-xs font-bold rounded-xl flex items-center justify-center gap-1.5 shrink-0"
                 >
                   <Copy className="w-3.5 h-3.5" />
                   <span>نسخ</span>
@@ -512,7 +611,7 @@ export const Dashboard: React.FC = () => {
               سيتم حذف الاختبار وجميع الأسئلة وإجابات ونتائج الطلاب المرتبطة به نهائيًا ولا يمكن التراجع عن هذه العملية.
             </p>
             
-            <div className="flex items-center justify-end gap-3 pt-2">
+            <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-3 pt-2">
               <button
                 type="button"
                 onClick={() => {

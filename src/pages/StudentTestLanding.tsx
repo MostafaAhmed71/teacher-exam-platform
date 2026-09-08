@@ -139,7 +139,7 @@ export const StudentTestLanding: React.FC = () => {
 
         {/* Test Info Badges */}
         <div className="p-6 space-y-6">
-          <div className="grid grid-cols-2 gap-3 bg-slate-50 p-4 rounded-2xl border border-slate-200 text-xs font-semibold text-slate-700">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-slate-50 p-4 rounded-2xl border border-slate-200 text-xs font-semibold text-slate-700">
             <div className="flex items-center gap-2">
               <FileText className="w-4 h-4 text-navy-900 shrink-0" />
               <span>عدد الأسئلة: <strong>{questions.length} سؤال</strong></span>

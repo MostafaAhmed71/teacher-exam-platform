@@ -11,8 +11,10 @@ export const Footer: React.FC = () => {
 
   return (
     <footer className="bg-white border-t border-slate-200 mt-auto py-4 no-print">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-xs font-semibold text-slate-400">
-        <span>جميع الحقوق محفوظة © {new Date().getFullYear()} - منصة مقياس للاختبارات والتقييم الإلكتروني</span>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-xs font-semibold text-slate-400 leading-relaxed">
+        <span className="block sm:inline">جميع الحقوق محفوظة © {new Date().getFullYear()}</span>
+        <span className="hidden sm:inline"> - </span>
+        <span className="block sm:inline">منصة مقياس للاختبارات والتقييم الإلكتروني</span>
       </div>
     </footer>
   );

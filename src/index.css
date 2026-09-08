@@ -1,6 +1,19 @@
 @import "tailwindcss";
 @config "../tailwind.config.js";
 
+html,
+body,
+#root {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+img,
+video,
+canvas {
+  max-width: 100%;
+}
+
 /* Custom scrollbars for clean look */
 ::-webkit-scrollbar {
   width: 6px;

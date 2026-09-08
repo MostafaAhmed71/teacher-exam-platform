@@ -25,17 +25,19 @@ export const Navbar: React.FC = () => {
         <div className="flex items-center justify-between h-16">
           
           {/* Logo & Platform Name */}
-          <Link to={user ? "/dashboard" : "/login"} className="flex items-center gap-3 group">
+          <Link to={user ? "/dashboard" : "/login"} className="flex items-center gap-2 sm:gap-3 group min-w-0">
             <img
               src="/logo.png"
               alt="شعار مقياس"
-              className="h-10 w-auto object-contain rounded-xl bg-white p-1 shadow-sm"
+              className="h-9 sm:h-10 w-auto object-contain rounded-xl bg-white p-1 shadow-sm shrink-0"
             />
-            <div>
-              <span className="font-extrabold text-xl tracking-tight text-white group-hover:text-gold-400 transition-colors">
+            <div className="min-w-0">
+              <span className="font-extrabold text-lg sm:text-xl tracking-tight text-white group-hover:text-gold-400 transition-colors">
                 مقياس
               </span>
-              <span className="block text-[11px] text-gold-400 font-medium">منصة الاختبارات والتقييم الإلكتروني</span>
+              <span className="hidden sm:block text-[11px] text-gold-400 font-medium truncate">
+                منصة الاختبارات والتقييم الإلكتروني
+              </span>
             </div>
           </Link>
 

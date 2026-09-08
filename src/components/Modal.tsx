@@ -40,22 +40,22 @@ export const Modal: React.FC<ModalProps> = ({
         onClick={onClose}
       />
 
-      <div className="flex min-h-full items-center justify-center p-4 text-center sm:p-0">
-        <div className={`relative transform overflow-hidden rounded-2xl bg-white text-right shadow-2xl transition-all sm:my-8 w-full ${maxWidth} border border-slate-100`}>
+      <div className="flex min-h-full items-end sm:items-center justify-center p-3 sm:p-4 text-center">
+        <div className={`relative transform rounded-2xl bg-white text-right shadow-2xl transition-all my-4 sm:my-8 w-full max-h-[90vh] overflow-y-auto ${maxWidth} border border-slate-100`}>
           
           {/* Header */}
-          <div className="bg-slate-50 px-6 py-4 border-b border-slate-200 flex items-center justify-between">
-            <h3 className="text-lg font-bold text-navy-900">{title}</h3>
+          <div className="sticky top-0 z-10 bg-slate-50 px-4 sm:px-6 py-4 border-b border-slate-200 flex items-center justify-between gap-3">
+            <h3 className="text-base sm:text-lg font-bold text-navy-900 min-w-0 break-words">{title}</h3>
             <button
               onClick={onClose}
-              className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-200 hover:text-slate-600 transition-colors"
+              className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-200 hover:text-slate-600 transition-colors shrink-0"
             >
               <X className="w-5 h-5" />
             </button>
           </div>
 
           {/* Content */}
-          <div className="p-6">{children}</div>
+          <div className="p-4 sm:p-6">{children}</div>
         </div>
       </div>
     </div>

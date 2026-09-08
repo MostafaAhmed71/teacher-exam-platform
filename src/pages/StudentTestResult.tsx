@@ -195,7 +195,7 @@ export const StudentTestResult: React.FC = () => {
           </div>
 
           {/* Stats Breakdown Grid */}
-          <div className="grid grid-cols-3 gap-3 text-xs font-bold">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs font-bold">
             <div className="bg-emerald-50 p-4 rounded-2xl border border-emerald-200 space-y-1 text-emerald-900">
               <span className="block text-emerald-600 font-semibold">الإجابات الصحيحة</span>
               <div className="text-2xl font-extrabold">{result.correct_count}</div>

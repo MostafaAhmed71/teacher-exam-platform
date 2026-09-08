@@ -37,7 +37,7 @@ export const Login: React.FC = () => {
 
   return (
     <div className="min-h-[85vh] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-slate-50">
-      <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-3xl shadow-xl border border-slate-100 relative overflow-hidden">
+      <div className="max-w-md w-full space-y-8 bg-white p-5 sm:p-8 rounded-3xl shadow-xl border border-slate-100 relative overflow-hidden">
         
         {/* Top Gold Accent Strip */}
         <div className="absolute top-0 right-0 left-0 h-2 bg-gradient-to-r from-gold-500 via-gold-400 to-navy-900"></div>

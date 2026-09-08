@@ -82,7 +82,7 @@ export const TestResults: React.FC = () => {
     });
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+    <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6 sm:space-y-8">
       
       {/* Top Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -97,10 +97,10 @@ export const TestResults: React.FC = () => {
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3 w-full sm:w-auto">
           <Link
             to={`/tests/${test.id}/edit`}
-            className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs transition-colors"
+            className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs transition-colors text-center"
           >
             تعديل الاختبار
           </Link>
@@ -109,7 +109,7 @@ export const TestResults: React.FC = () => {
             href={`${getAppBaseUrl()}/test/${test.id}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="px-4 py-2.5 bg-gold-500 hover:bg-gold-400 text-navy-950 font-extrabold rounded-xl text-xs shadow-md transition-colors"
+            className="px-4 py-2.5 bg-gold-500 hover:bg-gold-400 text-navy-950 font-extrabold rounded-xl text-xs shadow-md transition-colors text-center"
           >
             صفحة تقديم الطالب
           </a>
@@ -164,26 +164,26 @@ export const TestResults: React.FC = () => {
       </div>
 
       {/* Grade Distribution Bar Histogram Chart */}
-      <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 space-y-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <h3 className="text-lg font-extrabold text-navy-900">توزيع درجات الطلاب (Histogram)</h3>
-            <p className="text-xs text-slate-500">يمثل توزيع الطلاب عبر المستويات المئوية المختارة</p>
+      <div className="bg-white p-4 sm:p-6 rounded-3xl shadow-sm border border-slate-100 space-y-4">
+        <div className="flex items-start sm:items-center justify-between gap-3">
+          <div className="min-w-0">
+            <h3 className="text-base sm:text-lg font-extrabold text-navy-900">توزيع درجات الطلاب</h3>
+            <p className="text-xs text-slate-500">يمثل توزيع الطلاب عبر المستويات المئوية</p>
           </div>
-          <BarChart2 className="w-6 h-6 text-gold-500" />
+          <BarChart2 className="w-6 h-6 text-gold-500 shrink-0" />
         </div>
 
-        <div className="grid grid-cols-5 gap-3 pt-4 items-end h-40">
+        <div className="grid grid-cols-5 gap-1.5 sm:gap-3 pt-4 items-end h-36 sm:h-40">
           {Object.entries(stats.grade_distribution).map(([range, count]) => {
             const maxCount = Math.max(...Object.values(stats.grade_distribution), 1);
             const heightPercent = Math.max(Math.round((count / maxCount) * 100), 10);
 
             return (
-              <div key={range} className="flex flex-col items-center gap-2 h-full justify-end">
-                <span className="text-xs font-extrabold text-navy-900">{count} طالب</span>
+              <div key={range} className="flex flex-col items-center gap-1.5 sm:gap-2 h-full justify-end min-w-0">
+                <span className="text-[10px] sm:text-xs font-extrabold text-navy-900 text-center leading-tight">{count}</span>
                 <div
                   style={{ height: `${heightPercent}%` }}
-                  className={`w-full rounded-t-xl transition-all duration-500 ${
+                  className={`w-full rounded-t-lg sm:rounded-t-xl transition-all duration-500 ${
                     range === '81-100'
                       ? 'bg-emerald-500'
                       : range === '61-80'
@@ -193,7 +193,7 @@ export const TestResults: React.FC = () => {
                       : 'bg-rose-500'
                   }`}
                 ></div>
-                <span className="text-xs font-bold text-slate-600">{range}%</span>
+                <span className="text-[9px] sm:text-xs font-bold text-slate-600 text-center leading-tight">{range}%</span>
               </div>
             );
           })}
@@ -202,39 +202,39 @@ export const TestResults: React.FC = () => {
 
       {/* Tabs Section */}
       <div className="space-y-6">
-        <div className="flex items-center gap-4 border-b border-slate-200">
+        <div className="flex items-center gap-2 sm:gap-4 border-b border-slate-200 overflow-x-auto">
           <button
             onClick={() => setActiveTab('students')}
-            className={`pb-3 text-sm font-extrabold transition-all border-b-2 ${
+            className={`pb-3 text-xs sm:text-sm font-extrabold transition-all border-b-2 whitespace-nowrap ${
               activeTab === 'students'
                 ? 'border-navy-900 text-navy-900'
                 : 'border-transparent text-slate-400 hover:text-slate-700'
             }`}
           >
-            جدول نتائج الطلاب ({filteredAttempts.length})
+            نتائج الطلاب ({filteredAttempts.length})
           </button>
 
           <button
             onClick={() => setActiveTab('questions')}
-            className={`pb-3 text-sm font-extrabold transition-all border-b-2 ${
+            className={`pb-3 text-xs sm:text-sm font-extrabold transition-all border-b-2 whitespace-nowrap ${
               activeTab === 'questions'
                 ? 'border-navy-900 text-navy-900'
                 : 'border-transparent text-slate-400 hover:text-slate-700'
             }`}
           >
-            تحليل الأسئلة ومستوى الصعوبة ({questionAnalysis.length})
+            تحليل الأسئلة ({questionAnalysis.length})
           </button>
         </div>
 
         {/* Tab 1: Students Table */}
         {activeTab === 'students' && (
-          <div className="bg-white rounded-3xl shadow-sm border border-slate-100 p-6 space-y-6">
+          <div className="bg-white rounded-3xl shadow-sm border border-slate-100 p-4 sm:p-6 space-y-6 overflow-hidden">
             
             {/* Search & Sort Controls */}
-            <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
+            <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
               
               {/* Search input */}
-              <div className="relative flex-1">
+              <div className="relative flex-1 min-w-0">
                 <Search className="w-4 h-4 text-slate-400 absolute right-3 top-3.5" />
                 <input
                   type="text"
@@ -250,7 +250,7 @@ export const TestResults: React.FC = () => {
                 <select
                   value={gradeFilter}
                   onChange={(e) => setGradeFilter(e.target.value)}
-                  className="py-2.5 px-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 focus:ring-2 focus:ring-navy-900"
+                  className="w-full md:w-auto py-2.5 px-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 focus:ring-2 focus:ring-navy-900"
                 >
                   <option value="all">جميع الصفوف</option>
                   {gradesList.map((g) => (
@@ -263,7 +263,7 @@ export const TestResults: React.FC = () => {
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value as any)}
-                className="py-2.5 px-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 focus:ring-2 focus:ring-navy-900"
+                className="w-full md:w-auto py-2.5 px-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 focus:ring-2 focus:ring-navy-900"
               >
                 <option value="date_desc">أحدث إرسال أولاً</option>
                 <option value="score_desc">الأعلى درجة أولاً</option>
@@ -272,88 +272,143 @@ export const TestResults: React.FC = () => {
 
             </div>
 
-            {/* Table */}
+            {/* Results list */}
             {filteredAttempts.length === 0 ? (
               <div className="py-12 text-center text-slate-500 font-semibold text-sm">
                 لا يوجد نتائج تطابق البحث الفعلي.
               </div>
             ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full text-right border-collapse">
-                  <thead>
-                    <tr className="border-b border-slate-200 text-xs font-bold text-slate-500 bg-slate-50/50">
-                      <th className="py-3.5 px-4 rounded-r-xl">اسم الطالب</th>
-                      <th className="py-3.5 px-4">الصف</th>
-                      <th className="py-3.5 px-4 text-center">الدرجة</th>
-                      <th className="py-3.5 px-4 text-center">النسبة</th>
-                      <th className="py-3.5 px-4 text-center">التقييم</th>
-                      <th className="py-3.5 px-4 text-center">الإجابات</th>
-                      <th className="py-3.5 px-4 text-center">وقت الإرسال</th>
-                      <th className="py-3.5 px-4 text-left rounded-l-xl">التفاصيل</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100 text-sm">
-                    {filteredAttempts.map((attempt) => (
-                      <tr
-                        key={attempt.id}
-                        onClick={() => navigate(`/tests/${test.id}/results/${attempt.id}`)}
-                        className="hover:bg-slate-50 cursor-pointer transition-colors"
-                      >
-                        <td className="py-4 px-4 font-bold text-navy-900">
-                          {attempt.student_name}
-                        </td>
+              <>
+                {/* Mobile cards */}
+                <div className="space-y-3 lg:hidden">
+                  {filteredAttempts.map((attempt) => (
+                    <button
+                      key={attempt.id}
+                      type="button"
+                      onClick={() => navigate(`/tests/${test.id}/results/${attempt.id}`)}
+                      className="w-full text-right rounded-2xl border border-slate-200 bg-slate-50/60 p-4 space-y-3 hover:border-navy-300 transition-colors"
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <div className="font-extrabold text-navy-900 text-sm truncate">{attempt.student_name}</div>
+                          <div className="text-xs text-slate-500 mt-0.5">{attempt.grade}</div>
+                        </div>
+                        <span
+                          className={`shrink-0 inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-bold ${
+                            attempt.percentage >= 90
+                              ? 'bg-emerald-100 text-emerald-800'
+                              : attempt.percentage >= 80
+                              ? 'bg-blue-100 text-blue-800'
+                              : attempt.percentage >= 70
+                              ? 'bg-indigo-100 text-indigo-800'
+                              : attempt.percentage >= 60
+                              ? 'bg-amber-100 text-amber-800'
+                              : 'bg-rose-100 text-rose-800'
+                          }`}
+                        >
+                          {attempt.rating || 'مكتمل'}
+                        </span>
+                      </div>
+                      <div className="grid grid-cols-3 gap-2 text-center text-xs">
+                        <div className="rounded-xl bg-white border border-slate-200 py-2">
+                          <div className="text-slate-400 font-semibold">الدرجة</div>
+                          <div className="font-extrabold text-navy-900 mt-0.5">{attempt.score}/{attempt.total_score}</div>
+                        </div>
+                        <div className="rounded-xl bg-white border border-slate-200 py-2">
+                          <div className="text-slate-400 font-semibold">النسبة</div>
+                          <div className="font-extrabold text-navy-900 mt-0.5">{attempt.percentage}%</div>
+                        </div>
+                        <div className="rounded-xl bg-white border border-slate-200 py-2">
+                          <div className="text-slate-400 font-semibold">صح / خطأ</div>
+                          <div className="font-extrabold mt-0.5">
+                            <span className="text-emerald-600">{attempt.score}</span>
+                            <span className="text-slate-300 mx-0.5">/</span>
+                            <span className="text-rose-600">{attempt.total_score - attempt.score}</span>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-between text-xs text-slate-500">
+                        <span>{formatDateArabic(attempt.submitted_at)}</span>
+                        <span className="inline-flex items-center gap-1 font-bold text-navy-900">
+                          عرض الإجابات
+                          <ChevronLeft className="w-4 h-4" />
+                        </span>
+                      </div>
+                    </button>
+                  ))}
+                </div>
 
-                        <td className="py-4 px-4 text-slate-600 font-medium">
-                          {attempt.grade}
-                        </td>
-
-                        <td className="py-4 px-4 text-center font-bold text-navy-900">
-                          {attempt.score} / {attempt.total_score}
-                        </td>
-
-                        <td className="py-4 px-4 text-center font-extrabold text-slate-800">
-                          {attempt.percentage}%
-                        </td>
-
-                        <td className="py-4 px-4 text-center">
-                          <span
-                            className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold ${
-                              attempt.percentage >= 90
-                                ? 'bg-emerald-100 text-emerald-800'
-                                : attempt.percentage >= 80
-                                ? 'bg-blue-100 text-blue-800'
-                                : attempt.percentage >= 70
-                                ? 'bg-indigo-100 text-indigo-800'
-                                : attempt.percentage >= 60
-                                ? 'bg-amber-100 text-amber-800'
-                                : 'bg-rose-100 text-rose-800'
-                            }`}
-                          >
-                            {attempt.rating || 'مكتمل'}
-                          </span>
-                        </td>
-
-                        <td className="py-4 px-4 text-center text-xs font-semibold">
-                          <span className="text-emerald-600">✓ {attempt.score}</span>
-                          <span className="text-slate-300 mx-1">|</span>
-                          <span className="text-rose-600">✗ {attempt.total_score - attempt.score}</span>
-                        </td>
-
-                        <td className="py-4 px-4 text-center text-xs text-slate-500 font-medium">
-                          {formatDateArabic(attempt.submitted_at)}
-                        </td>
-
-                        <td className="py-4 px-4 text-left">
-                          <span className="inline-flex items-center gap-1 text-xs font-bold text-navy-900 hover:text-gold-600">
-                            <span>عرض الإجابات</span>
-                            <ChevronLeft className="w-4 h-4" />
-                          </span>
-                        </td>
+                {/* Desktop table */}
+                <div className="hidden lg:block overflow-x-auto">
+                  <table className="w-full text-right border-collapse min-w-[800px]">
+                    <thead>
+                      <tr className="border-b border-slate-200 text-xs font-bold text-slate-500 bg-slate-50/50">
+                        <th className="py-3.5 px-4 rounded-r-xl">اسم الطالب</th>
+                        <th className="py-3.5 px-4">الصف</th>
+                        <th className="py-3.5 px-4 text-center">الدرجة</th>
+                        <th className="py-3.5 px-4 text-center">النسبة</th>
+                        <th className="py-3.5 px-4 text-center">التقييم</th>
+                        <th className="py-3.5 px-4 text-center">الإجابات</th>
+                        <th className="py-3.5 px-4 text-center">وقت الإرسال</th>
+                        <th className="py-3.5 px-4 text-left rounded-l-xl">التفاصيل</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 text-sm">
+                      {filteredAttempts.map((attempt) => (
+                        <tr
+                          key={attempt.id}
+                          onClick={() => navigate(`/tests/${test.id}/results/${attempt.id}`)}
+                          className="hover:bg-slate-50 cursor-pointer transition-colors"
+                        >
+                          <td className="py-4 px-4 font-bold text-navy-900">
+                            {attempt.student_name}
+                          </td>
+                          <td className="py-4 px-4 text-slate-600 font-medium">
+                            {attempt.grade}
+                          </td>
+                          <td className="py-4 px-4 text-center font-bold text-navy-900">
+                            {attempt.score} / {attempt.total_score}
+                          </td>
+                          <td className="py-4 px-4 text-center font-extrabold text-slate-800">
+                            {attempt.percentage}%
+                          </td>
+                          <td className="py-4 px-4 text-center">
+                            <span
+                              className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold ${
+                                attempt.percentage >= 90
+                                  ? 'bg-emerald-100 text-emerald-800'
+                                  : attempt.percentage >= 80
+                                  ? 'bg-blue-100 text-blue-800'
+                                  : attempt.percentage >= 70
+                                  ? 'bg-indigo-100 text-indigo-800'
+                                  : attempt.percentage >= 60
+                                  ? 'bg-amber-100 text-amber-800'
+                                  : 'bg-rose-100 text-rose-800'
+                              }`}
+                            >
+                              {attempt.rating || 'مكتمل'}
+                            </span>
+                          </td>
+                          <td className="py-4 px-4 text-center text-xs font-semibold">
+                            <span className="text-emerald-600">✓ {attempt.score}</span>
+                            <span className="text-slate-300 mx-1">|</span>
+                            <span className="text-rose-600">✗ {attempt.total_score - attempt.score}</span>
+                          </td>
+                          <td className="py-4 px-4 text-center text-xs text-slate-500 font-medium">
+                            {formatDateArabic(attempt.submitted_at)}
+                          </td>
+                          <td className="py-4 px-4 text-left">
+                            <span className="inline-flex items-center gap-1 text-xs font-bold text-navy-900 hover:text-gold-600">
+                              <span>عرض الإجابات</span>
+                              <ChevronLeft className="w-4 h-4" />
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </>
             )}
 
           </div>
@@ -361,14 +416,66 @@ export const TestResults: React.FC = () => {
 
         {/* Tab 2: Question Analysis Table */}
         {activeTab === 'questions' && (
-          <div className="bg-white rounded-3xl shadow-sm border border-slate-100 p-6 space-y-6">
+          <div className="bg-white rounded-3xl shadow-sm border border-slate-100 p-4 sm:p-6 space-y-6 overflow-hidden">
             <div>
               <h3 className="text-lg font-extrabold text-navy-900">تحليل الأسئلة ومدى صعوبتها</h3>
               <p className="text-xs text-slate-500">يُظهر نسبة الإجابات الصحيحة والخاطئة لكل سؤال لتقييم المفاهيم الصعبة لدى الطلاب</p>
             </div>
 
-            <div className="overflow-x-auto">
-              <table className="w-full text-right border-collapse">
+            {/* Mobile cards */}
+            <div className="space-y-3 lg:hidden">
+              {questionAnalysis.map((q, idx) => (
+                <div key={q.question_id} className="rounded-2xl border border-slate-200 bg-slate-50/60 p-4 space-y-3">
+                  <div className="flex items-start gap-3">
+                    <span className="w-8 h-8 rounded-lg bg-navy-900 text-gold-400 font-extrabold text-sm flex items-center justify-center shrink-0">
+                      {idx + 1}
+                    </span>
+                    <div className="min-w-0 space-y-1">
+                      <p className="text-sm font-bold text-navy-900 leading-snug break-words">{q.question_text}</p>
+                      <span className="inline-flex px-2 py-0.5 bg-white text-slate-700 text-[11px] font-bold rounded-lg border border-slate-200">
+                        {q.question_type === 'multiple_choice' ? 'خيارات' : 'صح/خطأ'}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-3 gap-2 text-center text-xs">
+                    <div className="rounded-xl bg-white border border-slate-200 py-2">
+                      <div className="text-slate-400 font-semibold">مشاركات</div>
+                      <div className="font-extrabold text-slate-800 mt-0.5">{q.total_responses}</div>
+                    </div>
+                    <div className="rounded-xl bg-white border border-slate-200 py-2">
+                      <div className="text-emerald-600 font-semibold">صحيحة</div>
+                      <div className="font-extrabold text-emerald-600 mt-0.5">{q.correct_count}</div>
+                    </div>
+                    <div className="rounded-xl bg-white border border-slate-200 py-2">
+                      <div className="text-rose-600 font-semibold">خاطئة</div>
+                      <div className="font-extrabold text-rose-600 mt-0.5">{q.incorrect_count}</div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="flex-1 bg-slate-100 rounded-full h-2 overflow-hidden">
+                      <div
+                        style={{ width: `${q.success_rate}%` }}
+                        className={`h-full rounded-full ${
+                          q.success_rate >= 80
+                            ? 'bg-emerald-500'
+                            : q.success_rate >= 60
+                            ? 'bg-blue-500'
+                            : 'bg-rose-500'
+                        }`}
+                      />
+                    </div>
+                    <span className={`text-xs font-extrabold ${
+                      q.success_rate < 60 ? 'text-rose-600' : 'text-slate-800'
+                    }`}>
+                      {q.success_rate}%
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="hidden lg:block overflow-x-auto">
+              <table className="w-full text-right border-collapse min-w-[700px]">
                 <thead>
                   <tr className="border-b border-slate-200 text-xs font-bold text-slate-500 bg-slate-50/50">
                     <th className="py-3.5 px-4 rounded-r-xl">#</th>
