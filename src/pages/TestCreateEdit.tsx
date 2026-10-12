@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useLicense } from '../context/LicenseContext';
 import { testService } from '../services/testService';
 import type { Test, Question, QuestionType, TestStatus } from '../types';
 import { generateUniqueTestId, copyToClipboard, getAppBaseUrl } from '../utils/helpers';
@@ -25,6 +26,7 @@ export const TestCreateEdit: React.FC = () => {
   const isEdit = Boolean(editTestId);
 
   const { user } = useAuth();
+  const { isSuspended } = useLicense();
   const { showToast } = useToast();
   const navigate = useNavigate();
 
@@ -199,6 +201,11 @@ export const TestCreateEdit: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    if (isSuspended) {
+      showToast('تم انتهاء الحصة المجانية لقاعدة البيانات', 'error');
+      return;
+    }
+
     if (!title.trim() || !subject.trim() || !grade.trim()) {
       showToast('يرجى مِلء البيانات الأساسية للاختبار (العنوان، المادة، الصف)', 'error');
       return;
@@ -245,7 +252,13 @@ export const TestCreateEdit: React.FC = () => {
       }
       navigate('/dashboard');
     } catch (err: any) {
-      showToast(err.message || 'فشل حفظ الاختبار', 'error');
+      const msg = err.message || '';
+      showToast(
+        msg.includes('الحصة المجانية')
+          ? 'تم انتهاء الحصة المجانية لقاعدة البيانات'
+          : msg || 'فشل حفظ الاختبار',
+        'error'
+      );
     } finally {
       setSaving(false);
     }

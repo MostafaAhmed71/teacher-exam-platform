@@ -3,12 +3,14 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { testService } from '../services/testService';
 import type { Test, Attempt, TestStats, QuestionAnalysis } from '../types';
 import { formatDateArabic, getAppBaseUrl } from '../utils/helpers';
+import { exportAttemptsToCsv } from '../utils/exportHelpers';
 import { useToast } from '../components/Toast';
 import {
   Search,
   ArrowLeft,
   ChevronLeft,
-  BarChart2
+  BarChart2,
+  Download
 } from 'lucide-react';
 
 export const TestResults: React.FC = () => {
@@ -98,6 +100,22 @@ export const TestResults: React.FC = () => {
         </div>
 
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3 w-full sm:w-auto">
+          <button
+            onClick={() => {
+              if (attempts.length === 0) {
+                showToast('لا توجد نتائج لتصديرها بعد', 'error');
+                return;
+              }
+              exportAttemptsToCsv(test, attempts);
+              showToast('تم تصدير ملف النتائج بنجاح', 'success');
+            }}
+            disabled={attempts.length === 0}
+            className="flex items-center justify-center gap-1.5 px-4 py-2.5 bg-navy-900 hover:bg-navy-800 text-white font-extrabold rounded-xl text-xs shadow-md transition-colors text-center disabled:opacity-50 cursor-pointer"
+          >
+            <Download className="w-4 h-4 text-gold-400" />
+            <span>تصدير النتائج (Excel)</span>
+          </button>
+
           <Link
             to={`/tests/${test.id}/edit`}
             className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs transition-colors text-center"

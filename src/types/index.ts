@@ -145,3 +145,38 @@ export interface QuestionAnalysis {
   unanswered_count: number;
   success_rate: number;
 }
+
+export type LicenseStatus = 'active' | 'suspended';
+
+export interface ClientLicense {
+  id: string;
+  project_name: string;
+  client_name: string;
+  client_email?: string;
+  project_domain?: string;
+  status: LicenseStatus;
+  suspension_reason: string;
+  notes?: string;
+  last_status_change?: string;
+  updated_at?: string;
+  created_at?: string;
+}
+
+export interface LicenseAuditLog {
+  id: string;
+  license_id: string;
+  client_name: string;
+  previous_status: LicenseStatus;
+  new_status: LicenseStatus;
+  reason?: string;
+  performed_by: string;
+  created_at: string;
+}
+
+export interface OwnerStatus {
+  is_owner: boolean;
+  authenticated: boolean;
+  email?: string;
+  is_initial_setup?: boolean;
+}
+

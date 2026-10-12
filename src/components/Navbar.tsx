@@ -14,8 +14,8 @@ export const Navbar: React.FC = () => {
     navigate('/login');
   };
 
-  // Hide Navbar completely on all student test views for clean distraction-free student experience
-  if (location.pathname.startsWith('/test/')) {
+  // Hide Navbar completely on student test views and isolated owner portal
+  if (location.pathname.startsWith('/test/') || location.pathname.startsWith('/owner')) {
     return null;
   }
 

@@ -24,7 +24,7 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
     setTimeout(() => {
       setToasts((prev) => prev.filter((t) => t.id !== id));
-    }, 4000);
+    }, 4500);
   }, []);
 
   const removeToast = (id: string) => {
@@ -34,27 +34,46 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   return (
     <ToastContext.Provider value={{ showToast }}>
       {children}
-      <div className="fixed bottom-5 left-5 z-50 flex flex-col gap-2 max-w-sm w-full pointer-events-none">
+      
+      {/* Toast Notifications Container */}
+      <div className="fixed bottom-5 left-5 z-50 flex flex-col gap-2.5 max-w-sm w-full pointer-events-none" dir="rtl">
         {toasts.map((t) => (
           <div
             key={t.id}
-            className={`pointer-events-auto flex items-start gap-3 p-4 rounded-xl shadow-lg border text-sm font-semibold transition-all duration-300 transform translate-y-0 ${
-              t.type === 'success'
-                ? 'bg-emerald-900 text-white border-emerald-700'
-                : t.type === 'error'
-                ? 'bg-rose-900 text-white border-rose-700'
-                : 'bg-navy-900 text-white border-navy-700'
+            className={`pointer-events-auto flex items-start gap-3 p-4 rounded-2xl shadow-xl bg-white border text-right transition-all duration-300 transform translate-y-0 ${
+              t.type === 'error'
+                ? 'border-rose-200 border-r-4 border-r-rose-600 shadow-rose-900/10'
+                : t.type === 'success'
+                ? 'border-emerald-200 border-r-4 border-r-emerald-600 shadow-emerald-900/10'
+                : 'border-amber-200 border-r-4 border-r-amber-500 shadow-amber-900/10'
             }`}
           >
-            {t.type === 'success' && <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />}
-            {t.type === 'error' && <AlertCircle className="w-5 h-5 text-rose-400 shrink-0 mt-0.5" />}
-            {t.type === 'info' && <Info className="w-5 h-5 text-gold-400 shrink-0 mt-0.5" />}
-            
-            <span className="flex-1">{t.message}</span>
+            {/* Icon Badge */}
+            <div
+              className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 mt-0.5 border ${
+                t.type === 'error'
+                  ? 'bg-rose-50 text-rose-600 border-rose-100'
+                  : t.type === 'success'
+                  ? 'bg-emerald-50 text-emerald-600 border-emerald-100'
+                  : 'bg-amber-50 text-amber-600 border-amber-100'
+              }`}
+            >
+              {t.type === 'error' && <AlertCircle className="w-4 h-4" />}
+              {t.type === 'success' && <CheckCircle2 className="w-4 h-4" />}
+              {t.type === 'info' && <Info className="w-4 h-4" />}
+            </div>
 
+            {/* Message */}
+            <div className="flex-1 min-w-0 pt-0.5">
+              <p className="text-xs font-bold text-slate-800 leading-relaxed break-words">
+                {t.message}
+              </p>
+            </div>
+
+            {/* Close Button */}
             <button
               onClick={() => removeToast(t.id)}
-              className="text-slate-400 hover:text-white shrink-0 p-0.5"
+              className="text-slate-400 hover:text-slate-600 shrink-0 p-1 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer"
             >
               <X className="w-4 h-4" />
             </button>

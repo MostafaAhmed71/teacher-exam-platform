@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useLicense } from '../context/LicenseContext';
 import { testService } from '../services/testService';
 import type { Test, TestStatus } from '../types';
 import { copyToClipboard, generateWhatsAppShareUrl, getAppBaseUrl } from '../utils/helpers';
@@ -26,6 +27,7 @@ import {
 
 export const Dashboard: React.FC = () => {
   const { user } = useAuth();
+  const { isSuspended } = useLicense();
   const { showToast } = useToast();
 
   const [tests, setTests] = useState<Test[]>([]);
@@ -59,6 +61,11 @@ export const Dashboard: React.FC = () => {
   };
 
   const handleToggleStatus = async (test: Test) => {
+    if (isSuspended) {
+      showToast('تم انتهاء الحصة المجانية لقاعدة البيانات', 'error');
+      return;
+    }
+
     const nextStatus: TestStatus =
       test.status === 'published' ? 'stopped' : 'published';
     
@@ -69,21 +76,27 @@ export const Dashboard: React.FC = () => {
         'success'
       );
       loadTests();
-    } catch (err) {
-      showToast('فشل تغيير حالة الاختبار', 'error');
+    } catch (err: any) {
+      const msg = err.message || '';
+      showToast(msg.includes('الحصة المجانية') ? 'تم انتهاء الحصة المجانية لقاعدة البيانات' : msg || 'فشل تغيير حالة الاختبار', 'error');
     }
   };
 
   const handleDeleteConfirm = async () => {
     if (!testToDelete) return;
+    if (isSuspended) {
+      showToast('تم انتهاء الحصة المجانية لقاعدة البيانات', 'error');
+      return;
+    }
+
     try {
       await testService.deleteTest(testToDelete.id);
       showToast('تم حذف الاختبار بنجاح', 'success');
       setDeleteModalOpen(false);
       setTestToDelete(null);
       loadTests();
-    } catch (err) {
-      showToast('فشل حذف الاختبار', 'error');
+    } catch (err: any) {
+      showToast(err.message || 'فشل حذف الاختبار', 'error');
     }
   };
 
@@ -139,7 +152,17 @@ export const Dashboard: React.FC = () => {
         <div className="z-10 shrink-0 w-full md:w-auto">
           <Link
             to="/tests/create"
-            className="inline-flex w-full md:w-auto items-center justify-center gap-2.5 px-6 py-3.5 bg-gold-500 hover:bg-gold-400 text-navy-950 font-extrabold rounded-2xl shadow-lg transition-all transform hover:-translate-y-0.5"
+            onClick={(e) => {
+              if (isSuspended) {
+                e.preventDefault();
+                showToast('تم انتهاء الحصة المجانية لقاعدة البيانات', 'error');
+              }
+            }}
+            className={`inline-flex w-full md:w-auto items-center justify-center gap-2.5 px-6 py-3.5 font-extrabold rounded-2xl shadow-lg transition-all ${
+              isSuspended
+                ? 'bg-slate-300 text-slate-600 cursor-not-allowed'
+                : 'bg-gold-500 hover:bg-gold-400 text-navy-950 transform hover:-translate-y-0.5'
+            }`}
           >
             <PlusCircle className="w-5 h-5" />
             <span>إنشاء اختبار جديد</span>

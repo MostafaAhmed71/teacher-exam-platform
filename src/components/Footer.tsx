@@ -4,8 +4,8 @@ import { useLocation } from 'react-router-dom';
 export const Footer: React.FC = () => {
   const location = useLocation();
 
-  // Hide footer on student test routes for clean student experience
-  if (location.pathname.startsWith('/test/')) {
+  // Hide footer on student test routes and standalone owner portal
+  if (location.pathname.startsWith('/test/') || location.pathname.startsWith('/owner')) {
     return null;
   }
 

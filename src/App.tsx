@@ -1,9 +1,12 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
+import { LicenseProvider } from './context/LicenseContext';
 import { ToastProvider } from './components/Toast';
 import { Navbar } from './components/Navbar';
 import { Footer } from './components/Footer';
 import { ProtectedRoute } from './components/ProtectedRoute';
+import { OwnerRoute } from './components/OwnerRoute';
+import { LicenseBanner } from './components/LicenseBanner';
 
 // Pages
 import { Login } from './pages/Login';
@@ -14,17 +17,31 @@ import { StudentAttemptReport } from './pages/StudentAttemptReport';
 import { StudentTestLanding } from './pages/StudentTestLanding';
 import { StudentTestExam } from './pages/StudentTestExam';
 import { StudentTestResult } from './pages/StudentTestResult';
+import { OwnerLicenses } from './pages/OwnerLicenses';
 
 export function App() {
   return (
     <Router>
       <AuthProvider>
-        <ToastProvider>
-          <div className="min-h-screen flex flex-col bg-slate-50 font-tajawal antialiased text-slate-900 selection:bg-gold-500 selection:text-white">
-            <Navbar />
-            <main className="flex-1">
-              <Routes>
-                {/* Teacher Routes */}
+        <LicenseProvider>
+          <ToastProvider>
+            <div className="min-h-screen flex flex-col bg-slate-50 font-tajawal antialiased text-slate-900 selection:bg-gold-500 selection:text-white">
+              <LicenseBanner />
+              <Navbar />
+              <main className="flex-1">
+                <Routes>
+                  {/* Owner Routes */}
+                  <Route
+                    path="/owner/licenses"
+                    element={
+                      <OwnerRoute>
+                        <OwnerLicenses />
+                      </OwnerRoute>
+                    }
+                  />
+
+                  {/* Teacher Routes */}
+
                 <Route path="/login" element={<Login />} />
                 
                 <Route
@@ -84,6 +101,7 @@ export function App() {
             <Footer />
           </div>
         </ToastProvider>
+        </LicenseProvider>
       </AuthProvider>
     </Router>
   );

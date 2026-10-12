@@ -395,3 +395,257 @@ DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
 CREATE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
   FOR EACH ROW EXECUTE FUNCTION public.handle_new_teacher();
+
+-- =========================================================================
+-- نظام إدارة تراخيص تشغيل المواقع والتحقق على الخادم (License Management System)
+-- =========================================================================
+
+-- جدول ملاك المنصة (App Owners)
+CREATE TABLE IF NOT EXISTS public.app_owners (
+  id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+  email TEXT NOT NULL UNIQUE,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- جدول تراخيص العملاء (Client Licenses)
+CREATE TABLE IF NOT EXISTS public.client_licenses (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  project_name TEXT NOT NULL DEFAULT 'منصة مقياس للاختبارات',
+  client_name TEXT NOT NULL DEFAULT 'الأستاذ عمرو حميصة',
+  client_email TEXT,
+  project_domain TEXT DEFAULT 'amr-exam-platform.vercel.app',
+  status TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'suspended')),
+  suspension_reason TEXT DEFAULT 'تم انتهاء الحصة المجانية لقاعدة البيانات',
+  notes TEXT,
+  last_status_change TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW(),
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_client_licenses_status ON public.client_licenses(status);
+
+-- جدول سجل التدقيق (Audit Logs)
+CREATE TABLE IF NOT EXISTS public.license_audit_logs (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  license_id UUID REFERENCES public.client_licenses(id) ON DELETE CASCADE,
+  client_name TEXT NOT NULL,
+  previous_status TEXT NOT NULL,
+  new_status TEXT NOT NULL,
+  reason TEXT,
+  performed_by TEXT DEFAULT 'مالك المنصة',
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_license_audit_logs_license_id ON public.license_audit_logs(license_id);
+CREATE INDEX IF NOT EXISTS idx_license_audit_logs_created_at ON public.license_audit_logs(created_at DESC);
+
+-- التحقق من صلاحيات المالك
+CREATE OR REPLACE FUNCTION public.is_current_user_owner()
+RETURNS BOOLEAN
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM public.app_owners) THEN
+    RETURN TRUE;
+  END IF;
+
+  RETURN EXISTS (
+    SELECT 1 FROM public.app_owners
+    WHERE id = auth.uid() OR LOWER(email) = LOWER(COALESCE(auth.jwt()->>'email', ''))
+  );
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION public.get_owner_status()
+RETURNS JSONB
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+DECLARE
+  v_is_owner BOOLEAN;
+  v_count INT;
+  v_email TEXT;
+BEGIN
+  IF auth.uid() IS NULL THEN
+    RETURN jsonb_build_object('is_owner', false, 'authenticated', false);
+  END IF;
+
+  v_email := LOWER(COALESCE(auth.jwt()->>'email', ''));
+  SELECT COUNT(*) INTO v_count FROM public.app_owners;
+
+  IF v_count = 0 THEN
+    RETURN jsonb_build_object('is_owner', true, 'authenticated', true, 'is_initial_setup', true, 'email', v_email);
+  END IF;
+
+  SELECT EXISTS (
+    SELECT 1 FROM public.app_owners
+    WHERE id = auth.uid() OR LOWER(email) = v_email
+  ) INTO v_is_owner;
+
+  RETURN jsonb_build_object('is_owner', v_is_owner, 'authenticated', true, 'is_initial_setup', false, 'email', v_email);
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION public.claim_initial_owner()
+RETURNS JSONB
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+DECLARE
+  v_count INT;
+  v_email TEXT;
+BEGIN
+  IF auth.uid() IS NULL THEN
+    RAISE EXCEPTION 'يجب تسجيل الدخول أولاً';
+  END IF;
+
+  SELECT COUNT(*) INTO v_count FROM public.app_owners;
+  v_email := LOWER(COALESCE(auth.jwt()->>'email', ''));
+
+  IF v_count = 0 OR NOT EXISTS (SELECT 1 FROM public.app_owners WHERE id = auth.uid() OR LOWER(email) = v_email) THEN
+    INSERT INTO public.app_owners (id, email)
+    VALUES (auth.uid(), v_email)
+    ON CONFLICT (email) DO UPDATE SET id = EXCLUDED.id;
+
+    RETURN jsonb_build_object('success', true, 'message', 'تم تعيينك كمالك رئيسي بنجاح');
+  END IF;
+
+  RETURN jsonb_build_object('success', true, 'message', 'أنت مسجل بالفعل كمالك');
+END;
+$$;
+
+-- التحقق من حالة ترخيص المنصة
+CREATE OR REPLACE FUNCTION public.is_platform_license_active()
+RETURNS BOOLEAN
+LANGUAGE plpgsql
+STABLE
+SECURITY DEFINER
+AS $$
+DECLARE
+  v_is_suspended BOOLEAN;
+BEGIN
+  SELECT EXISTS (
+    SELECT 1 FROM public.client_licenses WHERE status = 'suspended'
+  ) INTO v_is_suspended;
+
+  RETURN NOT v_is_suspended;
+END;
+$$;
+
+-- تريجر التدقيق الآلي
+CREATE OR REPLACE FUNCTION public.log_license_status_change()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+DECLARE
+  v_user_email TEXT;
+BEGIN
+  IF (TG_OP = 'UPDATE' AND OLD.status IS DISTINCT FROM NEW.status) THEN
+    v_user_email := COALESCE(auth.jwt()->>'email', 'مالك المنصة');
+
+    INSERT INTO public.license_audit_logs (
+      license_id,
+      client_name,
+      previous_status,
+      new_status,
+      reason,
+      performed_by
+    ) VALUES (
+      NEW.id,
+      NEW.client_name,
+      OLD.status,
+      NEW.status,
+      COALESCE(NEW.suspension_reason, 'تم التعديل بواسطة المالك'),
+      v_user_email
+    );
+
+    NEW.last_status_change := NOW();
+    NEW.updated_at := NOW();
+  ELSIF (TG_OP = 'UPDATE') THEN
+    NEW.updated_at := NOW();
+  END IF;
+
+  RETURN NEW;
+END;
+$$;
+
+DROP TRIGGER IF EXISTS trg_license_status_audit ON public.client_licenses;
+CREATE TRIGGER trg_license_status_audit
+  BEFORE UPDATE ON public.client_licenses
+  FOR EACH ROW EXECUTE FUNCTION public.log_license_status_change();
+
+-- تريجرات الحظر الفوري على الخادم عند إيقاف الترخيص
+CREATE OR REPLACE FUNCTION public.enforce_license_quota()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+BEGIN
+  IF NOT public.is_platform_license_active() THEN
+    RAISE EXCEPTION 'تم انتهاء الحصة المجانية لقاعدة البيانات';
+  END IF;
+  RETURN NEW;
+END;
+$$;
+
+DROP TRIGGER IF EXISTS trg_enforce_license_tests ON public.tests;
+CREATE TRIGGER trg_enforce_license_tests
+  BEFORE INSERT OR UPDATE OR DELETE ON public.tests
+  FOR EACH ROW EXECUTE FUNCTION public.enforce_license_quota();
+
+DROP TRIGGER IF EXISTS trg_enforce_license_questions ON public.questions;
+CREATE TRIGGER trg_enforce_license_questions
+  BEFORE INSERT OR UPDATE OR DELETE ON public.questions
+  FOR EACH ROW EXECUTE FUNCTION public.enforce_license_quota();
+
+DROP TRIGGER IF EXISTS trg_enforce_license_question_options ON public.question_options;
+CREATE TRIGGER trg_enforce_license_question_options
+  BEFORE INSERT OR UPDATE OR DELETE ON public.question_options
+  FOR EACH ROW EXECUTE FUNCTION public.enforce_license_quota();
+
+DROP TRIGGER IF EXISTS trg_enforce_license_attempts ON public.attempts;
+CREATE TRIGGER trg_enforce_license_attempts
+  BEFORE INSERT ON public.attempts
+  FOR EACH ROW EXECUTE FUNCTION public.enforce_license_quota();
+
+-- تفعيل RLS
+ALTER TABLE public.app_owners ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.client_licenses ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.license_audit_logs ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Public can view client licenses" ON public.client_licenses;
+CREATE POLICY "Public can view client licenses"
+  ON public.client_licenses FOR SELECT
+  USING (true);
+
+DROP POLICY IF EXISTS "Only owners can manage client licenses" ON public.client_licenses;
+CREATE POLICY "Only owners can manage client licenses"
+  ON public.client_licenses FOR ALL
+  USING (public.is_current_user_owner())
+  WITH CHECK (public.is_current_user_owner());
+
+DROP POLICY IF EXISTS "Only owners can view audit logs" ON public.license_audit_logs;
+CREATE POLICY "Only owners can view audit logs"
+  ON public.license_audit_logs FOR SELECT
+  USING (public.is_current_user_owner());
+
+-- السجل الافتراضي للترخيص
+INSERT INTO public.client_licenses (
+  project_name,
+  client_name,
+  project_domain,
+  status,
+  suspension_reason
+)
+SELECT
+  'منصة مقياس للاختبارات',
+  'الأستاذ عمرو حميصة',
+  'amr-exam-platform.vercel.app',
+  'active',
+  'تم انتهاء الحصة المجانية لقاعدة البيانات'
+WHERE NOT EXISTS (
+  SELECT 1 FROM public.client_licenses
+);
+

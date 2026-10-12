@@ -1,4 +1,5 @@
 import { supabase, isSupabaseConfigured } from './supabaseClient';
+import { licenseService } from './licenseService';
 import type { Test, Question, Attempt, TestStats, QuestionAnalysis, TestStatus } from '../types';
 import { initialMockTests, initialMockQuestions, initialMockAttempts } from './mockData';
 
@@ -146,6 +147,11 @@ export const testService = {
    * Create new test with questions
    */
   async createTest(test: Test, questions: Question[]): Promise<Test> {
+    const currentLicense = await licenseService.getCurrentLicense();
+    if (currentLicense?.status === 'suspended') {
+      throw new Error(currentLicense.suspension_reason || 'تم انتهاء الحصة المجانية لقاعدة البيانات');
+    }
+
     if (isSupabaseConfigured && supabase) {
       // Insert test
       const { data: createdTest, error: testErr } = await supabase
@@ -215,6 +221,11 @@ export const testService = {
    * Update existing test and questions
    */
   async updateTest(testId: string, test: Partial<Test>, questions: Question[]): Promise<void> {
+    const currentLicense = await licenseService.getCurrentLicense();
+    if (currentLicense?.status === 'suspended') {
+      throw new Error(currentLicense.suspension_reason || 'تم انتهاء الحصة المجانية لقاعدة البيانات');
+    }
+
     if (isSupabaseConfigured && supabase) {
       await supabase
         .from('tests')
@@ -279,6 +290,11 @@ export const testService = {
    * Delete test
    */
   async deleteTest(testId: string): Promise<void> {
+    const currentLicense = await licenseService.getCurrentLicense();
+    if (currentLicense?.status === 'suspended') {
+      throw new Error(currentLicense.suspension_reason || 'تم انتهاء الحصة المجانية لقاعدة البيانات');
+    }
+
     if (isSupabaseConfigured && supabase) {
       await supabase.from('tests').delete().eq('id', testId);
       return;

@@ -1,15 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { studentService } from '../services/studentService';
+import { useLicense } from '../context/LicenseContext';
 import type { Test, StudentQuestion } from '../types';
 import { getDeviceFingerprint } from '../utils/helpers';
 import { useToast } from '../components/Toast';
-import { Clock, FileText, User, BookOpen, AlertCircle, ArrowLeft, ShieldCheck } from 'lucide-react';
+import { Clock, FileText, User, BookOpen, AlertCircle, ArrowLeft, ShieldCheck, Database } from 'lucide-react';
 
 export const StudentTestLanding: React.FC = () => {
   const { testId } = useParams<{ testId: string }>();
   const navigate = useNavigate();
   const { showToast } = useToast();
+  const { isSuspended } = useLicense();
 
   const [loading, setLoading] = useState(true);
   const [test, setTest] = useState<Test | null>(null);
@@ -160,8 +162,20 @@ export const StudentTestLanding: React.FC = () => {
             </div>
           )}
 
-          {/* Double Taking Blocked Warning Banner */}
-          {hasAlreadyTaken ? (
+          {/* License Suspended Warning Banner */}
+          {isSuspended ? (
+            <div className="bg-rose-50 border-2 border-rose-300 p-6 rounded-2xl text-center space-y-3">
+              <div className="w-12 h-12 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center mx-auto">
+                <Database className="w-6 h-6 animate-pulse" />
+              </div>
+              <h3 className="text-base font-extrabold text-rose-900">
+                تم انتهاء الحصة المجانية لقاعدة البيانات
+              </h3>
+              <p className="text-xs font-bold text-rose-800 leading-relaxed">
+                تم تعليق استقبال محاولات الاختبار الجديدة مؤقتاً.
+              </p>
+            </div>
+          ) : hasAlreadyTaken ? (
             <div className="bg-rose-50 border-2 border-rose-300 p-6 rounded-2xl text-center space-y-3">
               <div className="w-12 h-12 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center mx-auto">
                 <AlertCircle className="w-6 h-6" />
