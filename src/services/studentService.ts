@@ -6,15 +6,26 @@ import { calculateRating } from '../utils/helpers';
 const ATTEMPTS_LOCAL_KEY = 'teacher_platform_attempts';
 
 export const studentService = {
+  async redeemCode(testId: string, code: string, name: string, grade: string): Promise<string> {
+    if (!supabase || !isSupabaseConfigured) throw new Error('تفعيل الاختبارات يتطلب اتصال Supabase');
+    const { data, error } = await supabase.rpc('redeem_test_code', {
+      p_test_id: testId, p_code: code.trim(), p_student_name: name.trim(), p_grade: grade.trim(),
+    });
+    if (error) throw new Error(error.message);
+    if (!data?.token) throw new Error('تعذر تفعيل الاختبار');
+    return data.token;
+  },
+
   /**
    * Fetch public test for student. Must NOT expose correct answers!
    */
-  async getPublicTest(testId: string): Promise<{ test: Test | null; questions: StudentQuestion[]; error?: string }> {
+  async getPublicTest(testId: string, token?: string): Promise<{ test: Test | null; questions: StudentQuestion[]; expiresAt?: string; error?: string }> {
     if (isSupabaseConfigured && supabase) {
-      const { data, error } = await supabase.rpc('get_public_test_details', { p_test_id: testId });
+      const { data, error } = await supabase.rpc(token ? 'get_activated_test' : 'get_public_test_details', token
+        ? { p_test_id: testId, p_token: token } : { p_test_id: testId });
 
       if (error) {
-        return { test: null, questions: [], error: 'حدث خطأ أثناء تحميل بيانات الاختبار' };
+        return { test: null, questions: [], error: error.message };
       }
 
       if (data?.error) {
@@ -24,6 +35,7 @@ export const studentService = {
       return {
         test: data.test,
         questions: data.questions || [],
+        expiresAt: data.expires_at,
       };
     }
 
@@ -40,21 +52,7 @@ export const studentService = {
       return { test: null, questions: [], error: 'هذا الاختبار غير متاح حالياً (غير منشور أو متوقف).' };
     }
 
-    const questionsStr = localStorage.getItem('teacher_platform_questions');
-    const questionsMap: Record<string, Question[]> = questionsStr ? JSON.parse(questionsStr) : initialMockQuestions;
-    const fullQuestions = questionsMap[testId] || [];
-
-    // Strip correct_answer for student view!
-    const studentQuestions: StudentQuestion[] = fullQuestions.map((q) => ({
-      id: q.id,
-      question_text: q.question_text,
-      question_type: q.question_type,
-      points: q.points,
-      sort_order: q.sort_order,
-      options: q.options,
-    }));
-
-    return { test, questions: studentQuestions };
+    return { test, questions: [], error: token ? 'تفعيل الاختبارات يتطلب اتصال Supabase' : undefined };
   },
 
   /**
@@ -97,6 +95,7 @@ export const studentService = {
         return { result: null, error: error.message };
       }
 
+      if (data?.error) return { result: null, error: data.error };
       return { result: data };
     }
 

@@ -2,8 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { studentService } from '../services/studentService';
 import { useLicense } from '../context/LicenseContext';
-import type { Test, StudentQuestion } from '../types';
-import { getDeviceFingerprint } from '../utils/helpers';
+import type { Test } from '../types';
 import { useToast } from '../components/Toast';
 import { Clock, FileText, User, BookOpen, AlertCircle, ArrowLeft, ShieldCheck, Database } from 'lucide-react';
 
@@ -15,14 +14,13 @@ export const StudentTestLanding: React.FC = () => {
 
   const [loading, setLoading] = useState(true);
   const [test, setTest] = useState<Test | null>(null);
-  const [questions, setQuestions] = useState<StudentQuestion[]>([]);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   // Student Input State
   const [studentName, setStudentName] = useState('');
+  const [activationCode, setActivationCode] = useState('');
   const [studentGrade, setStudentGrade] = useState('');
   const [isCheckingAttempt, setIsCheckingAttempt] = useState(false);
-  const [hasAlreadyTaken, setHasAlreadyTaken] = useState(false);
 
   useEffect(() => {
     if (testId) {
@@ -34,13 +32,12 @@ export const StudentTestLanding: React.FC = () => {
     setLoading(true);
     setErrorMessage(null);
     try {
-      const { test: testData, questions: qData, error } = await studentService.getPublicTest(tId);
+      const { test: testData, error } = await studentService.getPublicTest(tId);
       if (error || !testData) {
         setErrorMessage(error || 'عذراً، هذا الاختبار غير موجود أو تم إيقافه.');
         return;
       }
       setTest(testData);
-      setQuestions(qData);
       setStudentGrade(testData.grade || '');
     } catch (err) {
       setErrorMessage('حدث خطأ أثناء تحميل الاختبار');
@@ -66,20 +63,9 @@ export const StudentTestLanding: React.FC = () => {
 
     setIsCheckingAttempt(true);
     
-    // Generate device/session unique identifier
-    const deviceId = getDeviceFingerprint();
-    const identifier = `${studentName.trim().toLowerCase()}_${studentGrade.trim().toLowerCase()}_${deviceId}`;
-
     try {
-      // Server-side check if attempt already exists!
-      const alreadyTaken = await studentService.checkExistingAttempt(testId, identifier);
-      
-      if (alreadyTaken) {
-        setHasAlreadyTaken(true);
-        setIsCheckingAttempt(false);
-        return;
-      }
-
+      const identifier = await studentService.redeemCode(testId, activationCode, studentName, studentGrade);
+      studentService.clearDraftAnswers(testId);
       // Store student info in session for exam execution
       sessionStorage.setItem(`student_info_${testId}`, JSON.stringify({
         studentName: studentName.trim(),
@@ -90,7 +76,7 @@ export const StudentTestLanding: React.FC = () => {
 
       navigate(`/test/${testId}/start`);
     } catch (err) {
-      showToast('حدث خطأ في التحقق من إمكانية بدء الاختبار', 'error');
+      showToast(err instanceof Error ? err.message : 'تعذر تفعيل الاختبار', 'error');
     } finally {
       setIsCheckingAttempt(false);
     }
@@ -144,7 +130,7 @@ export const StudentTestLanding: React.FC = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-slate-50 p-4 rounded-2xl border border-slate-200 text-xs font-semibold text-slate-700">
             <div className="flex items-center gap-2">
               <FileText className="w-4 h-4 text-navy-900 shrink-0" />
-              <span>عدد الأسئلة: <strong>{questions.length} سؤال</strong></span>
+              <span>عدد الأسئلة: <strong>{test.questions_count ?? 0} سؤال</strong></span>
             </div>
 
             <div className="flex items-center gap-2">
@@ -175,20 +161,16 @@ export const StudentTestLanding: React.FC = () => {
                 تم تعليق استقبال محاولات الاختبار الجديدة مؤقتاً.
               </p>
             </div>
-          ) : hasAlreadyTaken ? (
-            <div className="bg-rose-50 border-2 border-rose-300 p-6 rounded-2xl text-center space-y-3">
-              <div className="w-12 h-12 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center mx-auto">
-                <AlertCircle className="w-6 h-6" />
-              </div>
-              <h3 className="text-base font-extrabold text-rose-900">عذرًا، تعذر بدء الاختبار</h3>
-              <p className="text-xs font-bold text-rose-800 leading-relaxed">
-                لقد سبق لك أداء هذا الاختبار ولا يمكن إعادة المحاولة.
-              </p>
-              <p className="text-[11px] text-slate-500">تم تسجيل إجابتك السابقة بنجاح في النظام.</p>
-            </div>
           ) : (
             /* Student Entrance Form */
             <form onSubmit={handleStartExam} className="space-y-4">
+              <div>
+                <label htmlFor="activation-code" className="block text-xs font-bold text-slate-700 mb-1">كود التفعيل *</label>
+                <input id="activation-code" required value={activationCode} onChange={e => setActivationCode(e.target.value)}
+                  autoComplete="off" dir="ltr" placeholder="أدخل الكود الذي أرسله المعلم"
+                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm" />
+                <p className="text-xs text-slate-500 mt-2">يُحتسب استخدام عند بدء الاختبار. تحديث صفحة الاختبار لا يستهلك استخدامًا آخر.</p>
+              </div>
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-1">اسم الطالب / الطالبة الثلاثي *</label>
                 <div className="relative">

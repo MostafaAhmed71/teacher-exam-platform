@@ -3,6 +3,7 @@ import { useNavigate, useParams, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useLicense } from '../context/LicenseContext';
 import { testService } from '../services/testService';
+import { TestAccessCodes } from '../components/TestAccessCodes';
 import type { Test, Question, QuestionType, TestStatus } from '../types';
 import { generateUniqueTestId, copyToClipboard, getAppBaseUrl } from '../utils/helpers';
 import { useToast } from '../components/Toast';
@@ -250,7 +251,7 @@ export const TestCreateEdit: React.FC = () => {
         await testService.createTest(testObject, questions);
         showToast('تم إنشاء ونشر الاختبار بنجاح!', 'success');
       }
-      navigate('/dashboard');
+      navigate(isEdit ? '/dashboard' : `/tests/${testId}/edit`);
     } catch (err: any) {
       const msg = err.message || '';
       showToast(
@@ -320,6 +321,7 @@ export const TestCreateEdit: React.FC = () => {
         </div>
       </div>
 
+      {isEdit ? <TestAccessCodes testId={testId} /> : <p className="text-sm text-slate-600">بعد حفظ الاختبار ستنتقل إلى صفحة إنشاء أكواد التفعيل وتحديد عدد مرات استخدامها.</p>}
       <form onSubmit={handleSubmit} className="space-y-8">
         
         {/* Step 1: Basic Test Information */}

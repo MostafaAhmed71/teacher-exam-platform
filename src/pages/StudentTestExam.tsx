@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useEffectEvent } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { studentService } from '../services/studentService';
 import type { Test, StudentQuestion, SubmissionPayload } from '../types';
@@ -28,7 +28,8 @@ export const StudentTestExam: React.FC = () => {
   const [submitting, setSubmitting] = useState(false);
   const [confirmModalOpen, setConfirmModalOpen] = useState(false);
 
-  const timerRef = useRef<any>(null);
+  const [deadline, setDeadline] = useState<number | null>(null);
+  const submissionInFlight = useRef(false);
 
   useEffect(() => {
     if (!testId) return;
@@ -42,9 +43,13 @@ export const StudentTestExam: React.FC = () => {
     }
 
     const info = JSON.parse(stored);
+    if (!info.identifier) {
+      navigate(`/test/${testId}`);
+      return;
+    }
     setStudentInfo(info);
 
-    loadTestAndQuestions(testId);
+    loadTestAndQuestions(testId, info.identifier);
 
     // Restore draft answers if available
     const draft = studentService.loadDraftAnswers(testId);
@@ -53,10 +58,10 @@ export const StudentTestExam: React.FC = () => {
     }
   }, [testId]);
 
-  const loadTestAndQuestions = async (tId: string) => {
+  async function loadTestAndQuestions(tId: string, token: string) {
     setLoading(true);
     try {
-      const { test: testData, questions: qData, error } = await studentService.getPublicTest(tId);
+      const { test: testData, questions: qData, expiresAt, error } = await studentService.getPublicTest(tId, token);
       if (error || !testData) {
         showToast(error || 'فشل تحميل الاختبار', 'error');
         navigate(`/test/${tId}`);
@@ -68,8 +73,9 @@ export const StudentTestExam: React.FC = () => {
 
       // Initialize Timer if test has duration
       if (testData.duration_minutes && testData.duration_minutes > 0) {
-        const totalSecs = testData.duration_minutes * 60;
+        const totalSecs = expiresAt ? Math.max(0, Math.floor((Date.parse(expiresAt) - Date.now()) / 1000)) : testData.duration_minutes * 60;
         setRemainingSeconds(totalSecs);
+        setDeadline(expiresAt ? Date.parse(expiresAt) : Date.now() + totalSecs * 1000);
       }
     } catch (err) {
       showToast('خطأ أثناء تحميل الأسئلة', 'error');
@@ -77,26 +83,6 @@ export const StudentTestExam: React.FC = () => {
       setLoading(false);
     }
   };
-
-  // Timer Interval Effect
-  useEffect(() => {
-    if (remainingSeconds === null || remainingSeconds <= 0) return;
-
-    timerRef.current = setInterval(() => {
-      setRemainingSeconds((prev) => {
-        if (prev === null || prev <= 1) {
-          clearInterval(timerRef.current);
-          handleAutoSubmitTimeUp();
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-
-    return () => {
-      if (timerRef.current) clearInterval(timerRef.current);
-    };
-  }, [remainingSeconds !== null]);
 
   // Handle Option Select
   const handleSelectOption = (questionId: string, selectedValue: string) => {
@@ -107,15 +93,10 @@ export const StudentTestExam: React.FC = () => {
     }
   };
 
-  // Handle Auto Submit when Timer hits 0
-  const handleAutoSubmitTimeUp = () => {
-    showToast('انتهى الوقت المحدد للاختبار! جاري تسليم الإجابات تلقائيًا...', 'info');
-    executeFinalSubmission();
-  };
-
   // Execute Submission to Backend
   const executeFinalSubmission = async () => {
-    if (!testId || !studentInfo || submitting) return;
+    if (!testId || !studentInfo || submissionInFlight.current) return;
+    submissionInFlight.current = true;
 
     setSubmitting(true);
     try {
@@ -131,21 +112,43 @@ export const StudentTestExam: React.FC = () => {
 
       if (error || !result) {
         showToast(error || 'فشل تسليم الاختبار', 'error');
+        submissionInFlight.current = false;
         setSubmitting(false);
         return;
       }
 
       // Clear local draft and session
+      sessionStorage.removeItem(`student_info_${testId}`);
       studentService.clearDraftAnswers(testId);
       sessionStorage.setItem(`result_${result.attempt_id}`, JSON.stringify(result));
 
       showToast('تم تسليم الاختبار بنجاح والتصحيح بنجاح', 'success');
       navigate(`/test/${testId}/result/${result.attempt_id}`, { replace: true });
-    } catch (err: any) {
+    } catch {
       showToast('حدث خطأ أثناء تسليم الاختبار', 'error');
+      submissionInFlight.current = false;
       setSubmitting(false);
     }
   };
+
+  // Read the latest answers when the server deadline is reached.
+  const handleAutoSubmitTimeUp = useEffectEvent(() => {
+    showToast('انتهى الوقت المحدد للاختبار! جاري تسليم الإجابات تلقائيًا...', 'info');
+    executeFinalSubmission();
+  });
+
+  useEffect(() => {
+    if (deadline === null) return;
+    const timer = setInterval(() => {
+      const seconds = Math.max(0, Math.ceil((deadline - Date.now()) / 1000));
+      setRemainingSeconds(seconds);
+      if (seconds === 0) {
+        clearInterval(timer);
+        handleAutoSubmitTimeUp();
+      }
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [deadline]);
 
   if (loading) {
     return (

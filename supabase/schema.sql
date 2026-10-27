@@ -586,6 +586,9 @@ BEGIN
   IF NOT public.is_platform_license_active() THEN
     RAISE EXCEPTION 'تم انتهاء الحصة المجانية لقاعدة البيانات';
   END IF;
+  IF TG_OP = 'DELETE' THEN
+    RETURN OLD;
+  END IF;
   RETURN NEW;
 END;
 $$;

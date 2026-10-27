@@ -189,7 +189,7 @@ export const testService = {
           .select('*')
           .single();
 
-        if (qErr) console.error('Question insert error:', qErr);
+        if (qErr) throw new Error(qErr.message);
 
         if (createdQ && q.options && q.options.length > 0) {
           const optionsToInsert = q.options.map((opt, optIndex) => ({
@@ -198,7 +198,8 @@ export const testService = {
             option_key: opt.option_key,
             sort_order: optIndex + 1,
           }));
-          await supabase.from('question_options').insert(optionsToInsert);
+          const { error: optionsError } = await supabase.from('question_options').insert(optionsToInsert);
+          if (optionsError) throw new Error(optionsError.message);
         }
       }
 
@@ -227,7 +228,7 @@ export const testService = {
     }
 
     if (isSupabaseConfigured && supabase) {
-      await supabase
+      const { error: updateError, data: updatedTest } = await supabase
         .from('tests')
         .update({
           title: test.title,
@@ -240,36 +241,13 @@ export const testService = {
           status: test.status,
           updated_at: new Date().toISOString(),
         })
-        .eq('id', testId);
-
-      // Delete existing questions & recreate for clean sync
-      await supabase.from('questions').delete().eq('test_id', testId);
-
-      for (let i = 0; i < questions.length; i++) {
-        const q = questions[i];
-        const { data: createdQ } = await supabase
-          .from('questions')
-          .insert([{
-            test_id: testId,
-            question_text: q.question_text,
-            question_type: q.question_type,
-            points: q.points,
-            correct_answer: q.correct_answer,
-            sort_order: i + 1,
-          }])
-          .select('*')
-          .single();
-
-        if (createdQ && q.options && q.options.length > 0) {
-          const optionsToInsert = q.options.map((opt, optIndex) => ({
-            question_id: createdQ.id,
-            option_text: opt.option_text,
-            option_key: opt.option_key,
-            sort_order: optIndex + 1,
-          }));
-          await supabase.from('question_options').insert(optionsToInsert);
-        }
-      }
+        .eq('id', testId).select('id').single();
+      if (updateError) throw new Error(updateError.message);
+      if (!updatedTest) throw new Error('لم يتم حفظ الاختبار؛ تحقق من صلاحياتك');
+      const { error: questionsError } = await supabase.rpc('save_test_questions', {
+        p_test_id: testId, p_questions: questions,
+      });
+      if (questionsError) throw new Error(questionsError.message);
       return;
     }
 
@@ -296,7 +274,9 @@ export const testService = {
     }
 
     if (isSupabaseConfigured && supabase) {
-      await supabase.from('tests').delete().eq('id', testId);
+      const { data, error } = await supabase.from('tests').delete().eq('id', testId).select('id');
+      if (error) throw new Error(error.message);
+      if (!data?.length) throw new Error('لم يتم حذف الاختبار. تحقق من الصلاحيات وتطبيق تحديث قاعدة البيانات');
       return;
     }
 
@@ -317,7 +297,9 @@ export const testService = {
    */
   async toggleTestStatus(testId: string, status: TestStatus): Promise<void> {
     if (isSupabaseConfigured && supabase) {
-      await supabase.from('tests').update({ status }).eq('id', testId);
+      const { data, error } = await supabase.from('tests').update({ status }).eq('id', testId).select('id').single();
+      if (error) throw new Error(error.message);
+      if (!data) throw new Error('لم تتغير حالة الاختبار');
       return;
     }
 
